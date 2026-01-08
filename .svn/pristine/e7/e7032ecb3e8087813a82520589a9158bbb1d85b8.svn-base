@@ -1,0 +1,14 @@
+<div class="container mt-4 page-internal-server-error">
+  <div class="row">
+    <div class="col-12 mx-auto">
+      <h1 data-test="status">{{status}}</h1>
+      <h2><small>{{"error-page.description." + status | translate}}</small></h2>
+      <br />
+      <p>{{"error-page." + code | translate}}</p>
+      <br />
+      <p class="text-center">
+        <a href="/home" class="btn btn-primary">{{ status + ".link.home-page" | translate}}</a>
+      </p>
+    </div>
+  </div>
+</div>

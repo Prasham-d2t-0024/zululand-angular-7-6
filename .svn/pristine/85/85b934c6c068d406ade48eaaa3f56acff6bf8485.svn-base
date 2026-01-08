@@ -1,0 +1,11 @@
+<!-- <span class="mr-1" *ngIf="dctype">
+  <span class="badge badge-primary ">{{ dctype | translate }}</span>
+</span> -->
+
+<span *ngIf="typeMessage">
+  <span class="badge badge-success" style="display: inline!important;white-space:normal!important;">{{ typeMessage | translate }}</span>
+</span>
+
+<span class="ml-2" *ngIf="dctype">
+  <span class="badge badge-success" style="display: inline!important;white-space:normal!important;">{{ dctype | translate }}</span>
+</span>

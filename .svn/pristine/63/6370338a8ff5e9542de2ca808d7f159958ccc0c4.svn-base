@@ -1,0 +1,147 @@
+<div class="card" [@focusShadow]="(isCollapsed$ | async)?'blur':'focus'">
+    <div class="p-2 mb-1 px-1">
+        <ds-themed-badges *ngIf="showLabel" [object]="dso" [context]="context"
+            [showAccessStatus]="true"></ds-themed-badges>
+    </div>
+    <div>
+        <a *ngIf="linkType != linkTypes.None" [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+            [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null"
+            [routerLink]="[itemPageRoute]" class="card-img-top full-width position-relative"
+            [attr.title]="'search.results.view-result' | translate">
+            <div>
+                <ds-themed-thumbnail [thumbnail]="dso?.thumbnail | async" [defaultImage]="'assets/images/item.jpg'"
+                    [limitWidth]="false">
+                </ds-themed-thumbnail>
+            </div>
+        </a>
+        <span *ngIf="linkType == linkTypes.None" class="card-img-top full-width">
+            <div>
+                <ds-themed-thumbnail [thumbnail]="dso?.thumbnail | async" [defaultImage]="'assets/images/item.jpg'"
+                    [limitWidth]="false">
+                </ds-themed-thumbnail>
+            </div>
+        </span>
+        <div class="card-body">
+            <ds-truncatable class="cardinner-content" [id]="dso.id">
+                <!-- <ds-truncatable-part [id]="dso.id" [minLines]="3" type="h4">
+                    <a *ngIf="linkType != linkTypes.None"
+                        [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+                        [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null"
+                        [routerLink]="[itemPageRoute]" class="ellipsify-vertical line-3 item-list-title dont-break-out"
+                        [innerHTML]="dsoTitle">
+                    </a>
+                </ds-truncatable-part> -->
+                <div class="mb-2">
+                    <a *ngIf="linkType != linkTypes.None"
+                        [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+                        [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null"
+                        [routerLink]="[itemPageRoute]" class="ellipsify-vertical line-3 item-list-title dont-break-out"
+                        [innerHTML]="dsoTitle">
+                    </a>
+                </div>
+                <div class="d-flex mb-2">
+                    <div *ngIf="allMetadataValues(['dc.contributor.author']).length <= 2"
+                        class="item-list-authors text-secondary" style="margin-left: 9px;">
+                        <i class="fa fa-user mr-2" aria-hidden="true" *ngIf="allMetadataValues(['dc.contributor.author']).length != 0"></i>
+                        <span *ngFor="let author of allMetadataValues(['dc.contributor.author']); let last=last;">
+                            <a [routerLink]="['/browse/author']" [queryParams]="{'value':author}">
+                                <span [title]="author">{{ author.length > 30 ? (author | slice:0:30) + '...' : author }}</span>
+                            </a>
+                            <span *ngIf="!last">; </span>
+                        </span>
+                    </div>
+                    <span class="item-list-authors text-secondary"
+                        *ngIf="allMetadataValues(['dc.contributor.author']).length > 2" style="margin-left: 9px;width: 100%;">
+                        <div class="d-flex justify-content-between"
+                            *ngFor="let author of allMetadataValues(['dc.contributor.author']).slice(0, 2); let last=last;">
+                            <div>
+                                <i class="fa fa-user mr-2" aria-hidden="true" *ngIf="allMetadataValues(['dc.contributor.author']).length != 0"></i>
+                                <a [routerLink]="['/browse/author']" [queryParams]="{'value': author}">
+                                    <span [title]="author">{{ author.length > 30 ? (author | slice:0:30) + '...' : author }}</span>
+                                </a>
+                            </div>
+                            <div *ngIf="last">
+                            <div *ngIf="allMetadataValues(['dc.contributor.author']).length > 2" ngbDropdown
+                                class="d-inline">
+                                <a type="button" class="arrowhide dropdown-toggle" id="authorDropdown" ngbDropdownToggle
+                                    aria-haspopup="true" aria-expanded="false">
+                                    <i class="fa fa-ellipsis-v ml-2 mr-2" aria-hidden="true"></i>
+                                </a>
+                                <div class="listDropdown-left-menu" ngbDropdownMenu aria-labelledby="authorDropdown">
+                                    <a *ngFor="let author of allMetadataValues(['dc.contributor.author']).slice(2)"
+                                        ngbDropdownItem>
+                                        <a  [routerLink]="['/browse/author']" [queryParams]="{'value': author}">
+                                            <span style="font-size: 14px!important;">{{ author }}</span>
+                                        </a>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                       
+                    </span>
+                </div>
+                <div class="mb-1" *ngIf="dso.hasMetadata(['dc.date.issued'])">
+                    <span class="text-muted">
+                        <span *ngIf="dso.allMetadata(['dc.date.issued']).length > 0" class="item-list-authors">
+                            <i class="fa-solid fa-calendar-days mr-2 ml-2"></i>
+                            <span *ngFor="let date of allMetadataValues(['dc.date.issued']); let last=last;">
+                                <span [innerHTML]="date"></span>
+                                <span *ngIf="!last">; </span>
+                            </span>
+                        </span>
+                    </span>
+                </div>
+                <div class="mb-1" *ngIf="dso.hasMetadata(['dc.publisher'])">
+                    <span class="text-muted">
+                        <span *ngIf="dso.allMetadata(['dc.publisher']).length > 0" class="item-list-authors">
+                            <i class="fa-regular fa-building mr-2 ml-2"></i>
+                            <span *ngFor="let publisher of allMetadataValues(['dc.publisher']); let last=last;">
+                                <span [title]="publisher">{{ publisher.length > 30 ? (publisher | slice:0:30) + '...' :
+                                    publisher }}</span>
+                                <span *ngIf="!last">; </span>
+                            </span>
+                        </span>
+                    </span>
+                </div>
+                <div class="mb-1" *ngIf="dso.hasMetadata(['dc.bibliographicCitation.title'])">
+                    <span class="text-muted">
+                        <span *ngIf="dso.firstMetadataValue(['dc.bibliographicCitation.title'])" class="item-list-authors">
+                            <i class="fa-regular fa-newspaper mr-2 ml-2"></i>
+                            <!-- <span [innerHTML]="firstMetadataValue('dc.bibliographicCitation.title')"></span> -->
+                            <span>
+                                <span [title]="firstMetadataValue('dc.bibliographicCitation.title')">{{
+                                    firstMetadataValue('dc.bibliographicCitation.title').length > 30 ?
+                                    (firstMetadataValue('dc.bibliographicCitation.title') | slice:0:30) + '...' :
+                                    firstMetadataValue('dc.bibliographicCitation.title') }}</span>
+                            </span>
+                        </span>
+                    </span>
+                </div>
+
+            </ds-truncatable>
+
+            <div class="bottem-count-text mt-2 w-100">
+                <ul>
+                    <li class="icon-text  border-right"  title="Attachments count">
+                        <i class="fa fa-paperclip mr-3 font-wight-info" aria-hidden="true"></i>
+                        <span>{{dso.bitstreamcount}}</span>
+                    </li>
+                    <li class="icon-text  border-right"  title="View count">
+                        <i class="fa fa-eye mr-3 font-wight-info" aria-hidden="true"></i>
+                        <span>{{dso.viewcount}}</span>
+                    </li>
+                    <li class="icon-text" style="border: none!important;" title="Average Ratings">
+                        <i class="fa fa-star mr-3  font-wight-info" aria-hidden="true"></i>
+                        <span>{{dso.ratinavg}}</span>
+                    </li>
+                    <!-- <li class="icon-text  ">
+                    <i class="fa fa-comment mr-3 font-wight-info" aria-hidden="true"></i>
+                    <span>{{dso.commentcount}}</span>
+                </li> -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    <ng-content></ng-content>
+</div>

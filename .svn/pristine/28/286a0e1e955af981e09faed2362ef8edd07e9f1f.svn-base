@@ -1,0 +1,57 @@
+.healthwh{
+    width: 150px;
+    height: 130px;
+}
+.col-contents { 
+    h5 {
+        border-bottom: 1px solid #145462;        
+        padding-bottom: 5px;
+    }
+}
+.simple-card {
+    height: 285px;
+    position: relative;
+    .simple-card-img{
+        height: calc(100% - 60px);
+        ::ng-deep .data-card-img {
+            &.justify-content-md-start.justify-content-center {
+                justify-content: center !important;
+                
+                img {
+                    max-height: 210px;
+                }
+            }
+        }
+    }
+    .simple-card-title {
+        align-items: center;
+        background-color: #757575;
+        bottom: 0;
+        display: flex;
+        color: #fff !important;
+        justify-content: center;
+        left: 0;
+        min-height: 60px;
+        padding: 5px 10px;
+        position: absolute;
+        right: 0;
+        top: calc(100% - 60px);
+        transition: all .8s;
+
+        &:hover {
+            background-color: rgba(0,0,0, .5);
+            top:0;
+        }
+
+        a {
+            color: white !important;
+            font-size: 18px;
+            line-height: normal;
+            margin: 0;
+            &:hover {
+                color: silver;
+                text-decoration: none;
+            }
+        }    
+    }
+}

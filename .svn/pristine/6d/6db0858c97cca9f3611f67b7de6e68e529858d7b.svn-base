@@ -1,0 +1,43 @@
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ViewMode } from '../../../../core/shared/view-mode.model';
+import { listableObjectComponent } from '../../../../shared/object-collection/shared/listable-object/listable-object.decorator';
+import { ItemComponent } from '../shared/item.component';
+import { FindListOptions } from 'src/app/core/data/find-list-options.model';
+
+/**
+ * Component that represents a publication Item page
+ */
+
+@listableObjectComponent('Publication', ViewMode.StandalonePage)
+@Component({
+  selector: 'ds-publication',
+  styleUrls: ['./publication.component.scss'],
+  templateUrl: './publication.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class PublicationComponent extends ItemComponent implements AfterViewInit {
+  @Input() isBlank: Boolean = true;
+  departmentList = [];
+  options = new FindListOptions();
+  ngAfterViewInit() {
+   
+    this.getauthor();
+
+  }
+  getauthor() {
+    ///// Department
+    this.relationshipService.getRelatedItemsByLabel(this.object, 'isAuthorOfPublication', Object.assign(this.options, {
+      elementsPerPage: 500, currentPage: 1
+    })).subscribe((rd) => {
+      this.departmentList = [];
+     // console.log("rd.............", rd)
+      for (let case1 of rd.payload.page) {
+
+        this.departmentList.push(case1);
+        // console.log("this.act............",this.act)
+      }
+
+      this.cdRef.detectChanges();
+    });
+  }
+}

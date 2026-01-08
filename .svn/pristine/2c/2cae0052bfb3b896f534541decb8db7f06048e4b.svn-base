@@ -1,0 +1,171 @@
+<!-- <div class="container">
+    <ng-container *ngVar="(parent$ | async) as parent">
+        <ng-container *ngIf="parent?.payload as parentContext">
+            <div class="d-flex flex-row border-bottom mb-4 pb-4">
+
+                <header class="comcol-header mr-auto">
+                   
+                    <ds-comcol-page-header [name]="dsoNameService.getName(parentContext)"></ds-comcol-page-header>
+                    
+                    <ds-themed-comcol-page-handle [content]="parentContext.handle"
+                        [title]="parentContext.type+'.page.handle'">
+                    </ds-themed-comcol-page-handle>
+                   
+                    <ds-comcol-page-content [content]="parentContext.introductoryText" [hasInnerHtml]="true">
+                    </ds-comcol-page-content>
+                    
+                    <ds-comcol-page-content [content]="parentContext.sidebarText" [hasInnerHtml]="true"
+                        [title]="'community.page.news'">
+                    </ds-comcol-page-content>
+                </header>
+                <ds-dso-edit-menu></ds-dso-edit-menu>
+            </div>
+            
+            <ds-themed-comcol-page-browse-by [id]="parentContext.id"
+                [contentType]="parentContext.type"></ds-themed-comcol-page-browse-by>
+            <ds-themed-community-page-sub-community-list
+                [community]="parentContext"></ds-themed-community-page-sub-community-list>
+            <ds-themed-community-page-sub-collection-list
+                [community]="parentContext"></ds-themed-community-page-sub-collection-list>
+        </ng-container></ng-container>
+
+
+</div> -->
+
+<div class="container mt-4 tabViewContainer subCommunity-container">
+  <div class="row">
+    <div class="col-lg-12">
+      <ul ngbNav #nav="ngbNav" class="nav-tabs" style="margin-bottom: 0px!important;">
+        <li ngbNavItem>
+          <a ngbNavLink class="h6">
+            <i class="fas fa-inbox mr-2 fa-lg"></i>
+            <span>{{'home.browse.repository' | translate}}</span>
+          </a>
+          <ng-template ngbNavContent>
+            <div class="container bg-white tabViewContents subCommunityPage">
+              <ng-container *ngVar="(parent$ | async) as parent">
+                <ng-container *ngIf="parent?.payload as parentContext">
+                  <section class="row border-bottom mb-4">
+                    <div class="col-12 col-sm-3">
+                      <!-- Community logo -->
+                      <ds-comcol-page-logo
+                        *ngIf="logoRD$"
+                        [logo]="(logoRD$ | async)?.payload"
+                        [alternateText]="'Community Logo'"
+                      >
+                      </ds-comcol-page-logo>
+                    </div>
+                    <div class="col-12 col-sm-9">
+                      <header class="comcol-header">
+                        <!-- Parent Name -->
+                        <ds-comcol-page-header
+                          [name]="dsoNameService.getName(parentContext)"
+                        ></ds-comcol-page-header>
+                        <!-- Collection logo -->
+
+                        <!-- Handle -->
+                        <ds-themed-comcol-page-handle
+                          [content]="parentContext.handle"
+                          [title]="parentContext.type+'.page.handle'"
+                        >
+                        </ds-themed-comcol-page-handle>
+                        <!-- Introductory text -->
+                        <ds-comcol-page-content
+                          [content]="parentContext.introductoryText"
+                          [hasInnerHtml]="true"
+                        >
+                        </ds-comcol-page-content>
+                        <!-- News -->
+                        <ds-comcol-page-content
+                          [content]="parentContext.sidebarText"
+                          [hasInnerHtml]="true"
+                          [title]="'community.page.news'"
+                        >
+                        </ds-comcol-page-content>
+                      </header>
+                      <ds-dso-edit-menu></ds-dso-edit-menu>
+                    </div>
+                  </section>
+                  <section class="comcol-page-browse-section">
+                    <ds-themed-comcol-page-browse-by
+                      [id]="parentContext.id"
+                      [contentType]="parentContext.type"
+                    ></ds-themed-comcol-page-browse-by>
+                    <!-- <div class="tab-section mt-2">
+                    <div class="tab-nav-band">
+                      <button class="tablink current" onclick="CollectionMainTab1(event,'comm')">Community</button>
+                      <button class="tablink" onclick="CollectionMainTab1(event,'coll')">Collection</button>
+                    </div>
+                    <div id="comm" class="text-band">
+                      <ds-themed-community-page-sub-community-list
+                        [community]="parentContext"></ds-themed-community-page-sub-community-list>
+                    </div>
+                    <div id="coll" class="text-band">
+                      <ds-themed-community-page-sub-collection-list
+                        [community]="parentContext"></ds-themed-community-page-sub-collection-list>
+                    </div>
+                  </div> -->
+                  <div class="tab-section mt-2">
+                    <div class="container-fluid">
+                      <div class="row">
+                        <div class="col-md-12">
+                          <div *ngIf="totalCommunityElements == null || totalCommunityElements > 0" class="tab-nav-band">
+                            <button class="tablink1 current" onclick="CollectionMainTab1(event,'home')">Community</button>
+                            <button class="tablink1" onclick="CollectionMainTab1(event,'trending')">Collection</button>
+                          </div>
+                          <div *ngIf="totalCommunityElements == 0" class="tab-nav-band">
+                            <button class="tablink1" onclick="CollectionMainTab1(event,'trending')">Community</button>
+                            <button class="tablink1 current" onclick="CollectionMainTab1(event,'home')">Collection</button>
+                          </div>
+                          <div *ngIf="totalCommunityElements == null || totalCommunityElements > 0">
+                            <div id="home" class="text-band1">
+                              <ds-themed-community-page-sub-community-list
+                                [community]="parentContext">
+                              </ds-themed-community-page-sub-community-list>
+                            </div>
+                            <div id="trending" class="text-band1">
+                              <ds-themed-community-page-sub-collection-list
+                                [community]="parentContext">
+                              </ds-themed-community-page-sub-collection-list>
+                            </div>
+                          </div>
+                          <div *ngIf="totalCommunityElements == 0">
+                            <div id="trending" class="text-band1">
+                              <ds-themed-community-page-sub-community-list
+                                [community]="parentContext">
+                              </ds-themed-community-page-sub-community-list>
+                            </div>
+                            <div id="home" class="text-band1">
+                              <ds-themed-community-page-sub-collection-list
+                                [community]="parentContext">
+                              </ds-themed-community-page-sub-collection-list>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                    <!-- <footer *ngIf="communityPayload.copyrightText" class="border-top my-5 pt-4">
+                                                                                
+                                                <ds-comcol-page-content [content]="communityPayload.copyrightText"
+                                                    [hasInnerHtml]="true">
+                                                </ds-comcol-page-content>
+                                            </footer> -->
+                  </section>
+                </ng-container></ng-container
+              >
+            </div>
+          </ng-template>
+        </li>
+        <!-- <li ngbNavItem>
+          <a ngbNavLink class="h6"
+            ><i class="fas fa-chart-line mr-2 fa-lg"></i>{{'home.whats.trending'
+            | translate}}</a
+          >
+          <ng-template ngbNavContent> </ng-template>
+        </li> -->
+      </ul>
+      <div [ngbNavOutlet]="nav" class="browse-tab-content"></div>
+    </div>
+  </div>
+</div>

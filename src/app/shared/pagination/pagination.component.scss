@@ -1,0 +1,19 @@
+:host {
+    .paginationControlsDropdownMenu {
+        button {
+            padding: 5px 8px;
+        }
+    }
+    .dropdown-toggle::after {
+        display: none;
+    }
+    .dropdown-item {
+        padding-left: 20px;
+    }
+    .pagination-container {
+        height: 50px;
+        ::ng-deep .pagination {
+            margin: 0;
+        }
+    }
+}

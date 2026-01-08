@@ -1,0 +1,419 @@
+<div class="col-12" style="max-height: 100vh;overflow-y: auto;overflow-x: auto;" *ngIf="itemTab">
+    <div class="row mb-2 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.title')">
+        <span class="col-lg-12 text-secondary font-weight-bold">Title  </span>
+        <ng-container *ngFor="let title of itemTab.allMetadataValues('dc.title'); let last = last;">
+          <span class="col-lg-12 slash text-black">{{title}}</span>
+          <span *ngIf="!last"> | </span>
+        </ng-container>
+      </div>
+    <div class="col-lg-12 mb-2 p-0" *ngIf="itemTab.firstMetadataValue('dc.contributor.author')">
+        <span class="text-secondary  h6">Authors : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.contributor.author'); let last = last;">
+            <a [routerLink]="['/search']" [queryParams]="{'f.author':author+',equals'}">{{author}}</a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0" *ngIf="itemTab.firstMetadataValue('dc.contributor.editor')">
+        <span class="text-secondary  h6">Editor(s) : </span>
+        <ng-container *ngFor="let language of itemTab.allMetadataValues('dc.contributor.editor'); let last = last;">
+            <span class="text-black">{{language}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0" *ngIf="itemTab.firstMetadataValue('dc.contributor.corpauthor')">
+        <span class="text-secondary  h6">Corporate Author : </span>
+        <ng-container *ngFor="let language of itemTab.allMetadataValues('dc.contributor.corpauthor'); let last = last;">
+            <span class="text-black">{{language}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0" *ngIf="itemTab.firstMetadataValue('dc.date.issued')">
+        <span class="text-secondary  h6">Year of Publication : </span>
+        <span class="text-black">{{itemTab.firstMetadataValue('dc.date.issued')}}</span>
+    </div>
+    <div class="col-lg-12 mb-2 p-0" *ngIf="itemTab.firstMetadataValue('dc.language.iso')">
+        <span class="text-secondary  h6">Language : </span>
+
+        <ng-container *ngFor="let subject of itemTab.allMetadataValues('dc.language.iso'); let last = last;">
+            <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.language':subject+',equals'}"><span
+                    class="badge badge-secondary  ">{{subject}}</span></a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-2 p-0" *ngIf="itemTab.firstMetadataValue('dc.subject')">
+        <span class="text-secondary  h6">Keywords : </span>
+        <ng-container *ngFor="let subject of itemTab.allMetadataValues('dc.subject'); let last = last;">
+            <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.subject':subject+',equals'}"><span
+                    class="badge badge-secondary  ">{{subject}}</span></a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-2 p-0" *ngIf="itemTab.firstMetadataValue('dc.department')">
+        <span class="text-secondary  h6">Department : </span>
+        <ng-container *ngFor="let subject of itemTab.allMetadataValues('dc.department'); let last = last;">
+            <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.department':subject+',equals'}"><span
+                    class="badge badge-secondary  ">{{subject}}</span></a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-2 p-0" *ngIf="itemTab.firstMetadataValue('dc.location')">
+        <span class="text-secondary  h6">Location : </span>
+        <ng-container *ngFor="let subject of itemTab.allMetadataValues('dc.location'); let last = last;">
+            <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.location':subject+',equals'}"><span
+                    class="badge badge-secondary  ">{{subject}}</span></a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-2 p-0" *ngIf="itemTab.firstMetadataValue('dc.location.library')">
+        <span class="text-secondary  h6">Library location : </span>
+        <ng-container *ngFor="let subject of itemTab.allMetadataValues('dc.location.library'); let last = last;">
+            <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.loclib':subject+',equals'}"><span
+                    class="badge badge-secondary  ">{{subject}}</span></a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0" *ngIf="itemTab.firstMetadataValue('dc.organization')">
+        <span class="text-secondary  h6">Organization : </span>
+        <ng-container *ngFor="let subject of itemTab.allMetadataValues('dc.organization'); let last = last;">
+            <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.organization':subject+',equals'}"><span
+                    class="badge badge-secondary  ">{{subject}}</span></a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0" *ngIf="itemTab.firstMetadataValue('dc.source')">
+        <span class="text-secondary  h6">Source(s) : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.source'); let last = last;">
+            <a [routerLink]="['/search']" [queryParams]="{'f.source':author+',equals'}"><span
+                    class="badge badge-secondary  ">{{author}}</span></a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+  
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.allMetadataValues('dc.description.abstract')">
+        <ng-container *ngFor="let abstract of itemTab.allMetadataValues('dc.description.abstract'); let last = last;">
+            <span class="text-secondary  h6">Abstract : </span>
+            <span class="slash text-black" [innerHTML]="abstract"></span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.description')">
+        <span class="text-secondary  h6">Description : </span>
+        <ds-truncatable [id]="1" *ngIf="itemTab !== undefined && itemTab !== null">
+            <ds-truncatable-part [id]="1" [minLines]="3">
+                <span class="slash text-black">{{itemTab.firstMetadataValue('dc.description')}}</span>
+            </ds-truncatable-part>
+        </ds-truncatable>
+    </div>
+
+
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract"
+        *ngIf="itemTab.firstMetadataValue('dc.bibliographicCitation.conferencedate')">
+        <span class="text-secondary  h6">Conference Date : </span>
+        <ng-container
+            *ngFor="let author of itemTab.allMetadataValues('dc.bibliographicCitation.conferencedate'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract"
+        *ngIf="itemTab.firstMetadataValue('dc.bibliographicCitation.conferencename')">
+        <span class="text-secondary  h6">Conference Name : </span>
+        <ng-container
+            *ngFor="let author of itemTab.allMetadataValues('dc.bibliographicCitation.conferencename'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract"
+        *ngIf="itemTab.firstMetadataValue('dc.bibliographicCitation.conferenceplace')">
+        <span class="text-secondary  h6">Conference Location : </span>
+        <ng-container
+            *ngFor="let author of itemTab.allMetadataValues('dc.bibliographicCitation.conferenceplace'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.publisher')">
+        <span class="text-secondary  h6">Publisher : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.publisher'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract"
+        *ngIf="itemTab.firstMetadataValue('dc.bibliographicCitation.title')">
+        <span class="text-secondary  h6">Journal Title : </span>
+        <ng-container
+            *ngFor="let author of itemTab.allMetadataValues('dc.bibliographicCitation.title'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract"
+        *ngIf="itemTab.firstMetadataValue('dc.bibliographicCitation.volume')">
+        <span class="text-secondary  h6">Volume : </span>
+        <ng-container
+            *ngFor="let author of itemTab.allMetadataValues('dc.bibliographicCitation.volume'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract"
+        *ngIf="itemTab.firstMetadataValue('dc.bibliographicCitation.issue')">
+        <span class="text-secondary  h6">Issue/Article Nr : </span>
+        <ng-container
+            *ngFor="let author of itemTab.allMetadataValues('dc.bibliographicCitation.issue'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.format.pagerange')">
+        <span class="text-secondary  h6">Page Range : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.format.pagerange'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.title.parent')">
+        <span class="text-secondary  h6">Title of Parent Book : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.title.parent'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.rights')">
+        <span class="text-secondary  h6">Creative Commons : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.rights'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.identifier.citation')">
+        <span class="text-secondary  h6">Citation : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.identifier.citation'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.relation.ispartofseries')">
+        <span class="text-secondary  h6">Series/Report No. : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.relation.ispartofseries'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.identifier')">
+        <span class="text-secondary  h6">Identifiers : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.identifier'); let last = last;">
+            <a [href]="itemTab.firstMetadataValue('dc.identifier')">{{author}}</a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('refterms.dateFirstOnline')">
+        <span class="text-secondary  h6">Date of Online Publication : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('refterms.dateFirstOnline'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('rioxxterms.licenseref.uri')">
+        <span class="text-secondary  h6">License URI : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('rioxxterms.licenseref.uri'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract"
+        *ngIf="itemTab.firstMetadataValue('rioxxterms.licenseref.startdate')">
+        <span class="text-secondary  h6">License start date : </span>
+        <ng-container
+            *ngFor="let author of itemTab.allMetadataValues('rioxxterms.licenseref.startdate'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dcterms.dateAccepted')">
+        <span class="text-secondary  h6">Date accepted : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dcterms.dateAccepted'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('rioxxterms.version')">
+        <span class="text-secondary  h6">Version : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('rioxxterms.version'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('rioxxterms.versionofrecord')">
+        <span class="text-secondary  h6">Version of record (DOI) : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('rioxxterms.versionofrecord'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('refterms.panel')">
+        <span class="text-secondary  h6">REF Panel : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('refterms.panel'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.description.sponsorship')">
+        <span class="text-secondary  h6">Projects or Funders : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.description.sponsorship'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.relation.youtube')">
+        <span class="text-secondary  h6">Embedded YouTube Video : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.relation.youtube'); let last = last;">
+            <a [href]="itemTab.firstMetadataValue('dc.relation.youtube')">{{author}}</a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.relation.vimeo')">
+        <span class="text-secondary  h6">Embedded Vimeo Video : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.relation.vimeo'); let last = last;">
+            <a [href]="itemTab.firstMetadataValue('dc.relation.vimeo')">{{author}}</a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.relation.embedded')">
+        <span class="text-secondary  h6">Embedded video : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.relation.embedded'); let last = last;">
+            <a [href]="itemTab.firstMetadataValue('dc.relation.embedded')">{{author}}</a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.identifier.doi')">
+        <span class="text-secondary  h6">DOI : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.identifier.doi'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.identifier.isbn')">
+        <span class="text-secondary  h6">ISBN : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.identifier.isbn'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.identifier.issn')">
+        <span class="text-secondary  h6">ISSN : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.identifier.issn'); let last = last;">
+            <a [href]="itemTab.firstMetadataValue('dc.identifier.issn')" target="_blank">{{author}}</a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.identifier.other')">
+        <span class="text-secondary  h6">Other : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.identifier.other'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.relation.uri')">
+        <span class="text-secondary  h6">Resource/Dataset Location : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.relation.uri'); let last = last;">
+            <a [href]="itemTab.firstMetadataValue('dc.relation.uri')" target="_blank">{{author}}</a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.identifier.uri')">
+        <span class="text-secondary  h6">{{'item.page.uri' | translate}} : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.identifier.uri'); let last = last;">
+            <a [href]="itemTab.firstMetadataValue('dc.identifier.uri')" target="_blank">{{author}}</a>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.publisher.place')">
+        <span class="text-secondary  h6">Place of Publication : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.publisher.place'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.description.degree')">
+        <span class="text-secondary  h6">Thesis Type : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.description.degree'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.format.pages')">
+        <span class="text-secondary  h6">Pages : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.format.pages'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.description.refereed')">
+        <span class="text-secondary  h6">Refereed : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.description.refereed'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.subject.other')">
+        <span class="text-secondary  h6">Subject: Uncontrolled keywords : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.subject.other'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.coverage.spatial')">
+        <span class="text-secondary  h6">Geographical Terms : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.coverage.spatial'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.description.notes')">
+        <span class="text-secondary  h6">Notes : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.description.notes'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.subject.asfa')">
+        <span class="text-secondary  h6">Subject : ASFA : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.subject.asfa'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+    <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="itemTab.firstMetadataValue('dc.description.status')">
+        <span class="text-secondary  h6">Publication Status : </span>
+        <ng-container *ngFor="let author of itemTab.allMetadataValues('dc.description.status'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last"> | </span>
+        </ng-container>
+    </div>
+</div>

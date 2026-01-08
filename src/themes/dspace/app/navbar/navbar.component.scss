@@ -1,0 +1,75 @@
+nav.navbar { 
+  align-items: baseline;
+}
+
+/** Mobile menu styling **/
+@media screen and (max-width: map-get($grid-breakpoints, md)-0.02) {
+  .navbar {
+    width: 100%;
+    background-color: var(--bs-white);
+    position: absolute;
+    overflow: hidden;
+    height: 0;
+    z-index: 9999;
+    &.open {
+      height: 100vh; //doesn't matter because wrapper is sticky
+    }
+  }
+}
+
+@media screen and (min-width: map-get($grid-breakpoints, md)) {
+  .reset-padding-md {
+    margin-left: calc(var(--bs-spacer) / -2);
+    margin-right: calc(var(--bs-spacer) / -2);
+  }
+}
+
+/* TODO remove when https://github.com/twbs/bootstrap/issues/24726 is fixed */
+.navbar-expand-md.navbar-container {
+  @media screen and (max-width: map-get($grid-breakpoints, md)-0.02) {
+    > .navbar-inner-container {
+      padding: 0 var(--bs-spacer);
+      a.navbar-brand {
+        display: none;
+      }
+      .navbar-collapsed {
+        display: none;
+      }
+    }
+    padding: 0;
+  }
+  height: 80px;
+}
+
+a.navbar-brand img {
+  max-height: var(--ds-header-logo-height);
+}
+
+.navbar-nav {
+  ::ng-deep a.nav-link {
+    color: var(--ds-navbar-link-color);
+  }
+  ::ng-deep a.nav-link:hover {
+    color: var(--ds-secondary-color);
+  }
+}
+
+.navbar-brand2{
+    display: inline-block;
+    padding-left: 0.3125rem;
+    padding-right: 0.3125rem;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+    border-left: 2px solid rgb(215, 215, 215);
+}
+
+.navbar-brand{
+    display: inline-block !important;
+    padding-top: 0.3125rem !important;
+    padding-bottom: 0.3125rem !important;
+    font-size: 1.25rem !important;
+    line-height: inherit !important;
+    white-space: nowrap !important;
+    margin-right: 0rem !important;
+}

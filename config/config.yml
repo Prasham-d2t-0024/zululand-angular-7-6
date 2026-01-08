@@ -1,0 +1,14 @@
+rest:
+  ssl: true
+  host: openscholarship.unizulu.ac.za
+  port: 443
+  nameSpace: /server
+  superseturlbaseUrl: http://localhost:8080
+
+# Search settings
+search: 
+  # Settings to enable/disable or configure advanced search filters.
+  advancedFilters:
+    enabled: true
+    # List of filters to enable in "Advanced Search" dropdown
+    filter: [ 'title', 'author', 'subject', 'location','loclib','organization','department' ]

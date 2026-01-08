@@ -1,0 +1,56 @@
+ .bottem-count-text ul {
+     display: flex;
+     flex-direction: row;
+     align-items: center;
+     padding: 0;
+     margin: 0;
+ }
+
+ .bottem-count-text ul li {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 5px 5px 0;
+    text-decoration: none;
+    width: 100%; 
+ }
+
+ .bottem-count-text ul li img {
+     width: 28px !important;
+     margin-right: 4px;
+ }
+
+ .bottem-count-text ul li span {
+     font-size: 14px;
+     font-weight: 600;
+     color: #978f8f;
+     margin-left: 5%;
+ }
+
+ .font-wight-info {
+     font-weight: 600;
+ }
+ 
+::ng-deep .data-card , .data-card{
+    background-color: white;
+    box-shadow: 0px 1px 5px 0 #ccc;
+    min-height: 150px;
+    transition: all .5s;
+    &:hover {
+        box-shadow: 0px 2px 5px 1px #9e9b9b;
+    }
+    
+    @media screen and (max-width: map-get($grid-breakpoints, sm)) {
+      .img-col {
+        margin-bottom: 5px;
+      }
+    }
+        
+    .lead {
+      font-size: 1.125rem;
+    }
+    .thumbnail-img {
+      justify-content: flex-start;
+    }
+  }

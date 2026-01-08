@@ -1,0 +1,121 @@
+<div class="container ecds-container">
+    <div class="row">
+        <div class="col-12">
+            <div class="mt-4 col-contents">                
+                <h4 class="mb-4 text-capitalize text-primary"><b>AquaDoc Partner institutions</b></h4>
+                <p>
+                    The Ethiopian Central Discovery System (AquaDoc) serves as a repository for resources
+                    produced
+                    by Ethiopian
+                    academic
+                    institutions as well as governmental and non-governmental health organizations. By
+                    contributing to AquaDoc,
+                    partner
+                    institutions accrue benefits including:
+                </p>
+                <ul>
+                    <li>Improved resource sharing and access to local, digital and open access content on a
+                        freely available
+                        platform</li>
+                    <li>Increased discoverability and usage of knowledge and information resources to a
+                        wider
+                        audience</li>
+                    <li>improved impact of research output by providing access to local and global users
+                    </li>
+                </ul>
+                <p>
+                    Your organization can join AquaDoc with no direct costs and can benefit from this strategic
+                    partnership.
+                    For
+                    more
+                    information, please check out the <a routerLink="/faq" href="javascript:void(0);">FAQs
+                        about
+                        AquaDoc</a>
+                </p>
+                <p>
+                    The AquaDoc currently holds records from the following partner institutions.
+                </p>
+            </div>
+        </div>
+        <div class="col-12">            
+            <div class="mt-4 col-contents">
+                <h5 class="mb-4 text-capitalize text-primary">
+                    Partner health institutions
+                </h5>
+                <div class="row">
+                    <ng-container *ngFor="let community of (communitiesRD$ | async)?.page">
+                        <div class="col-12 col-md-4  text-center pb-4"
+                            *ngIf="community.firstMetadataValue('dc.education')==='Health'">
+                            <div class="bg-white simple-card">
+                                <div class="p-2 simple-card-img ">
+                                    <ds-themed-thumbnail [thumbnail]="(community.logo | async)?.payload"
+                                        [defaultImage]="'assets/images/item.jpg'" [limitWidth]="false">
+                                    </ds-themed-thumbnail>
+                                </div>
+                                <div class="simple-card-title">
+                                    <a [routerLink]="['/communities/', community.id]"
+                                        class="ellipsify-vertical line-2 text-primary">{{
+                                        dsoNameService.getName(community) }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="mt-4 col-contents">
+                <h5 class="mb-4 text-capitalize text-primary">
+                    Academic partner institutions
+                </h5>
+                <div class="row">
+                    <ng-container *ngFor="let community of (communitiesRD$ | async)?.page">
+                        <div class="col-12 col-md-4 border text-center pb-4"
+                            *ngIf="community.firstMetadataValue('dc.education')==='Academic'">
+                            <div class="bg-white simple-card">
+                                <div class="p-2 simple-card-img ">
+                                    <ds-themed-thumbnail [thumbnail]="(community.logo | async)?.payload"
+                                        [defaultImage]="'assets/images/item.jpg'" [limitWidth]="false">
+                                    </ds-themed-thumbnail>
+                                </div>
+                                <div class="simple-card-title">
+                                    <a [routerLink]="['/communities/', community.id]"
+                                        class="ellipsify-vertical line-2 text-primary">{{
+                                        dsoNameService.getName(community) }}
+                                    </a>
+                                </div>                                        
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="mt-4 col-contents">
+                <h5 class="mb-4 text-capitalize text-primary">
+                Colleges/Schools of Medicine & Health Sciences/Public Health Institutes
+                </h5>
+                <div class="row">
+                    <ng-container *ngFor="let community of (communitiesRD$ | async)?.page">
+                        <div class="col-12 col-md-4 border text-center pb-4"
+                            *ngIf="community.firstMetadataValue('dc.education')==='college'">
+                            <div class="bg-white simple-card">
+                                <div class="p-2 simple-card-img ">
+                                    <ds-themed-thumbnail [thumbnail]="(community.logo | async)?.payload"
+                                        [defaultImage]="'assets/images/item.jpg'" [limitWidth]="false">
+                                    </ds-themed-thumbnail>
+                                </div>
+                                <div class="simple-card-title">
+                                    <a [routerLink]="['/communities/', community.id]" class="ellipsify-vertical line-2  text-primary">{{
+                                        dsoNameService.getName(community) }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

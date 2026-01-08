@@ -1,0 +1,37 @@
+<form class="form-login"
+      (ngSubmit)="submit()"
+      [formGroup]="form" novalidate>
+  <label class="sr-only">{{"login.form.email" | translate}}</label>
+  <input [attr.aria-label]="'login.form.email' |translate"
+         autocomplete="off"
+         autofocus
+         class="form-control position-relative mb-3"
+         formControlName="email"
+         placeholder="{{'login.form.email' | translate}}"
+         required
+         type="email"
+         [attr.data-test]="'email' | dsBrowserOnly">
+  <label class="sr-only">{{"login.form.password" | translate}}</label>
+  <input [attr.aria-label]="'login.form.password' |translate"
+         autocomplete="off"
+         class="form-control position-relative mb-3"
+         placeholder="{{'login.form.password' | translate}}"
+         formControlName="password"
+         required
+         type="password"
+         [attr.data-test]="'password' | dsBrowserOnly">
+
+     <input [attr.aria-label]="'login.form.captcha' |translate" autocomplete="off"
+          class="form-control position-relative mb-3" placeholder="Enter text as shown in below image"
+          formControlName="captcha" required type="text" [attr.data-test]="'text' | dsBrowserOnly">
+     <div class="d-flex justify-content-end w-100 mb-3">          
+          <img class="w-50 captcha-img"  [src]="base64captcha">
+     </div>
+
+  <div *ngIf="(error | async) && hasError" class="alert alert-danger" role="alert"
+       @fadeOut>{{ (error | async) | translate }}</div>
+  <div *ngIf="(message | async) && hasMessage" class="alert alert-info" role="alert"
+       @fadeOut>{{ (message | async) | translate }}</div>
+  <button class="btn btn-primary btn-block mt-3 submitBtn" type="submit" [attr.data-test]="'login-button' | dsBrowserOnly"
+          [disabled]="!form.valid"><i class="fas fa-sign-in-alt"></i> {{"login.form.submit" | translate}}</button>
+</form>

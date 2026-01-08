@@ -1,0 +1,47 @@
+<div class="card">
+  <div class="card-img">
+    <a *ngIf="linkType != linkTypes.None" [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+      [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null"
+      [routerLink]="['/communities/', object.id]" class="card-img-top position-relative"
+      [attr.title]="'search.results.view-result' | translate">
+      <ds-themed-thumbnail style="min-height: 50px!important;" [thumbnail]="(object.logo | async)?.payload" [defaultImage]="'assets/images/item.jpg'"
+        [limitWidth]="false">
+      </ds-themed-thumbnail>
+    </a>
+    <span *ngIf="linkType == linkTypes.None" class="card-img-top position-relative">
+      <ds-themed-thumbnail style="min-height: 50px!important;" [thumbnail]="(object.logo | async)?.payload" [defaultImage]="'assets/images/item.jpg'"
+        [limitWidth]="false">
+      </ds-themed-thumbnail>
+    </span>
+  </div>
+  <div class="card-body">
+    <!-- <h4 class="card-title">{{ dsoNameService.getName(object) }}</h4> -->
+    <!-- <p *ngIf="object.shortDescription" class="card-text">{{object.shortDescription}}</p> -->
+    <div *ngIf="linkType != linkTypes.None" class="card-title titleheight text-center">
+      <a [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+        [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null"
+        [routerLink]="['/communities/', object.id]" class="h5 text-secondary">{{ dsoNameService.getName(object) }}</a>
+    </div>
+   
+    <div class="bottem-count-text mt-3 w-100">
+      <ul>
+        <li class="icon-text  border-right" title="{{'home.label.subcommunity' | translate}}">
+          <i class="fa fa-inbox mr-2" aria-hidden="true"></i>
+          <span>{{object.subCommunityCount}}</span>
+        </li>
+        <li class="icon-text  border-right" title="{{'home.label.collection' | translate}}">
+          <i class="fa fa-folder mr-2" aria-hidden="true"></i>
+          <span>{{object.collectionCount}}</span>
+        </li>
+        <li class="icon-text  border-right" title="{{'home.label.items' | translate}}">
+          <i class="fa fa-file mr-2" aria-hidden="true"></i>
+          <span>{{object.itemCount}}</span>
+        </li>
+        <li class="icon-text" style="border: none!important;" title="{{'home.label.viewcount' | translate}}">
+          <i class="fa fa-eye mr-2" aria-hidden="true"></i>
+          <span>{{object.viewCount}}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

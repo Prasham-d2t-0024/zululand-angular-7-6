@@ -1,0 +1,122 @@
+<div class="container">
+    <div class="epeople-registry row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between border-bottom mb-3">
+                <h2 id="header" class="pb-2"><b>Your Question</b></h2>
+            </div>
+
+            <div class="container-fluid">
+                <form [formGroup]="contactFormGroup" (ngSubmit)="savecontact()">
+                    <div class="flex-grow-1 mr-3 ml-3">
+                        <div class="form-group ">
+                            <label>Institute</label>
+
+                            <select #recivermail class="form-control">
+                                <ng-container *ngFor="let community of (communitiesRD$ | async)?.page">
+                                    <option *ngIf="community.firstMetadataValue('dc.relation.uri')"
+                                        [value]="community.firstMetadataValue('dc.relation.uri')">
+                                        {{dsoNameService.getName(community) }}</option>
+                                </ng-container>
+
+                            </select>
+
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 mr-3 ml-3">
+                        <div class="form-group ">
+                            <label>Question *</label>
+                            <input type="text" class="form-control" placeholder="" formControlName="question"
+                                [ngClass]="{ 'is-invalid':  f.question.errors }">
+                            <div *ngIf="f.question.errors" class="invalid-feedback">
+                                <div *ngIf="f.question.errors.required">* is required</div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 mr-3 ml-3">
+                        <div class="form-group ">
+                            <label>More Details / explanation *</label>
+                            <textarea class="form-control" formControlName="description" row="5"
+                                [ngClass]="{ 'is-invalid':  f.description.errors }"></textarea>
+                            <div *ngIf="f.description.errors" class="invalid-feedback">
+                                <div *ngIf="f.description.errors.required">* is required</div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 mr-3 ml-3">
+                        <div class="form-group files">
+                            <label>Attach Documents </label>
+                            <input type="file" class="form-control" (change)="showPreview($event)" />
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom mb-3">
+                        <h2 id="header" class="pb-2"><b>Your Details</b></h2>
+                    </div>
+                    <div class="flex-grow-1 mr-3 ml-3">
+                        <div class="form-group ">
+                            <label>Email Address *</label>
+                            <input type="email" class="form-control" placeholder="" formControlName="email"
+                                [ngClass]="{ 'is-invalid':  f.email.errors }">
+                            <div *ngIf="f.email.errors" class="invalid-feedback">
+                                <div *ngIf="f.email.errors.required">* is required</div>
+                                <div *ngIf="f.email.errors.email">Email must be a valid email address</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 mr-3 ml-3">
+                        <div class="form-group ">
+                            <label>First Name</label>
+                            <input type="text" class="form-control" placeholder="" formControlName="firstname">
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 mr-3 ml-3">
+                        <div class="form-group ">
+                            <label>Last Name</label>
+                            <input type="text" class="form-control" placeholder="" formControlName="lastname">
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 mr-3 ml-3">
+                        <div class="form-group ">
+                            <label>Institute Name</label>
+                            <input type="text" class="form-control" placeholder="" formControlName="institute">
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 mr-3 ml-3">
+                        <div class="form-group ">
+                            <label>Your Details / Organizations</label>
+                            <textarea class="form-control" formControlName="organizations" row="5">
+
+                                </textarea>
+
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 mr-3 ml-3">
+                        <label>Captcha</label>
+                        <input [attr.aria-label]="'login.form.captcha' |translate" autocomplete="off"
+                            class="form-control position-relative mb-3" placeholder="Enter text as shown in below image"
+                            formControlName="captcha" required type="text" [attr.data-test]="'text' | dsBrowserOnly">
+                        <div class="d-flex captcha">
+                            <img class="w-50 captcha-img" [src]="base64captcha">
+                        </div>
+
+                        <div *ngIf="(error | async) && hasError" class="alert alert-danger" role="alert" @fadeOut>{{
+                            (error | async) |
+                            translate }}</div>
+                        <div *ngIf="(message | async) && hasMessage" class="alert alert-info" role="alert" @fadeOut>{{
+                            (message | async) |
+                            translate }}</div>
+                    </div>
+                    <div class="flex-grow-1 mr-3 ml-3 mt">
+                        <div class="form-group ">
+                            <ds-loading *ngIf="loder" message="{{'' | translate}}"></ds-loading>
+                            <button class="btn btn-primary" [disabled]="contactFormGroup.invalid">Submit</button>
+                            <!-- <button class="btn btn-primary" >Submit</button> -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>

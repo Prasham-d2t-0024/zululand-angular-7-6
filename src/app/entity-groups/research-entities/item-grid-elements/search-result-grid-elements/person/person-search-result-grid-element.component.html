@@ -1,0 +1,110 @@
+<div class="card" [@focusShadow]="(isCollapsed$ | async)?'blur':'focus'">
+  <div class="tag-content p-2">
+    <ds-themed-badges *ngIf="showLabel" [object]="dso" [context]="context" [showAccessStatus]="true"></ds-themed-badges>
+  </div>
+  <a *ngIf="linkType != linkTypes.None" [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+    [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null" [routerLink]="[itemPageRoute]"
+    class="card-img-top full-width position-relative" [attr.title]="'search.results.view-result' | translate">
+    <div>
+      <ds-themed-thumbnail [thumbnail]="dso?.thumbnail | async" [defaultImage]="'assets/images/person-placeholder.svg'"
+        [limitWidth]="false">
+      </ds-themed-thumbnail>
+    </div>
+  </a>
+  <span *ngIf="linkType == linkTypes.None" class="card-img-top full-width">
+    <div>
+      <ds-themed-thumbnail [thumbnail]="dso?.thumbnail | async" [defaultImage]="'assets/images/person-placeholder.svg'"
+        [limitWidth]="false">
+      </ds-themed-thumbnail>
+    </div>
+  </span>
+  <div class="card-body">
+    <ds-truncatable class="cardinner-content" [id]="dso.id">
+      <!-- <ds-truncatable-part [id]="dso.id" [minLines]="3" type="h4"> -->
+        <a *ngIf="linkType != linkTypes.None" [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+          [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null"
+          [routerLink]="[itemPageRoute]" class="ellipsify-vertical line-3 item-list-title dont-break-out"
+          [innerHTML]="dsoTitle">
+        </a>
+      <!-- </ds-truncatable-part> -->
+
+
+      <p *ngIf="dso.hasMetadata('person.email')" class="item-email card-text text-muted">
+          <span [innerHTML]="firstMetadataValue('person.email')"></span>
+      </p>
+      <p *ngIf="dso.hasMetadata('person.jobTitle')" class="item-jobtitle card-text">
+          <span [innerHTML]="firstMetadataValue('person.jobTitle')"></span>
+      </p>
+
+    </ds-truncatable>
+
+    <div class="bottem-count-text mt-3 w-100">
+      <ul>
+        <li class="icon-text  border-right">
+          <i class="fa fa-paperclip mr-3" aria-hidden="true"></i>
+          <span>{{dso.bitstreamcount}}</span>
+        </li>
+        <li class="icon-text  border-right">
+          <i class="fa fa-eye mr-3" aria-hidden="true"></i>
+          <span>{{dso.viewcount}}</span>
+        </li>
+        <li class="icon-text  border-right">
+          <i class="fa fa-star mr-3" aria-hidden="true"></i>
+          <span>{{dso.ratinavg}}</span>
+        </li>
+        <!-- <li class="icon-text  ">
+          <i class="fa fa-comment mr-3 font-wight-info" aria-hidden="true"></i>
+          <span>{{dso.commentcount}}</span>
+        </li> -->
+      </ul>
+    </div>
+  </div>
+  <ng-content></ng-content>
+</div>
+
+
+
+<!-- <div class="card" [@focusShadow]="(isCollapsed$ | async)?'blur':'focus'">
+  <ds-truncatable [id]="dso.id">
+    <div class="position-absolute ml-1">
+      <ng-content></ng-content>
+    </div>
+    <a *ngIf="linkType != linkTypes.None"
+       [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+       [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null" [routerLink]="[itemPageRoute]"
+       class="card-img-top full-width" [attr.title]="'search.results.view-result' | translate">
+      <div>
+        <ds-themed-thumbnail [thumbnail]="dso?.thumbnail | async" [limitWidth]="false">
+        </ds-themed-thumbnail>
+      </div>
+    </a>
+    <span *ngIf="linkType == linkTypes.None" class="card-img-top full-width">
+            <div>
+                <ds-themed-thumbnail [thumbnail]="dso?.thumbnail | async" [limitWidth]="false">
+                </ds-themed-thumbnail>
+            </div>
+        </span>
+    <div class="card-body">
+      <ds-themed-badges *ngIf="showLabel" [object]="dso" [context]="context"></ds-themed-badges>
+      <ds-truncatable-part [id]="dso.id" [minLines]="3" type="h4">
+        <h4 class="card-title" [innerHTML]="dsoTitle"></h4>
+      </ds-truncatable-part>
+      <p *ngIf="dso.hasMetadata('person.email')" class="item-email card-text text-muted">
+        <ds-truncatable-part [id]="dso.id" [minLines]="1">
+          <span [innerHTML]="firstMetadataValue('person.email')"></span>
+        </ds-truncatable-part>
+      </p>
+      <p *ngIf="dso.hasMetadata('person.jobTitle')" class="item-jobtitle card-text">
+        <ds-truncatable-part [id]="dso.id" [minLines]="3">
+          <span [innerHTML]="firstMetadataValue('person.jobTitle')"></span>
+        </ds-truncatable-part>
+      </p>
+      <div *ngIf="linkType != linkTypes.None" class="text-center">
+        <a [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+           [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null" [routerLink]="[itemPageRoute]"
+           class="lead btn btn-primary viewButton">{{ 'search.results.view-result' | translate}}</a>
+      </div>
+    </div>
+  </ds-truncatable>
+  <ng-content></ng-content>
+</div> -->

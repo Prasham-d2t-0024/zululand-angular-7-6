@@ -1,0 +1,6 @@
+<h4 class="ellipsify-vertical line-3 item-page-title-field text-secondary">
+  <!-- <div *ngIf="item.firstMetadataValue('dspace.entity.type') as type" class="d-inline">
+    {{ type.toLowerCase() + '.page.titleprefix' | translate }}
+  </div> -->
+  <span title="{{dsoNameService.getName(item)}}" class="dont-break-out">{{ dsoNameService.getName(item) }}</span>
+</h4>

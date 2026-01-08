@@ -1,0 +1,60 @@
+:host ::ng-deep {
+  --ds-wrapper-grid-spacing: calc(var(--bs-spacer) / 4);
+.titleheight {
+    height: 50px;
+    text-transform: capitalize;
+  }
+  .card-template-container {
+    
+    .card-columns {
+      margin-left: calc(-1 * var(--ds-wrapper-grid-spacing));
+      margin-right: calc(-1 * var(--ds-wrapper-grid-spacing));
+      column-gap: 0;
+
+      .card-column {
+        padding-left: var(--ds-wrapper-grid-spacing);
+        padding-right: var(--ds-wrapper-grid-spacing);
+
+        .card-element {
+          .justify-content-center.justify-content-md-start {
+            justify-content: center !important;
+          }
+
+          .card {
+            margin-top: var(--ds-wrapper-grid-spacing);
+            margin-bottom: var(--ds-wrapper-grid-spacing);
+
+            div.thumbnail>.thumbnail-content {
+              height: var(--ds-card-thumbnail-height);
+              margin: auto;
+              display: block;
+              width: 100px;
+              min-width: 100px;
+              min-height: 100%;
+             
+              object-position: 50% 15%;
+            }
+
+            .card-img {
+              padding: 8px;
+            }
+
+            .card-body {
+              padding: 8px 8px 0;
+            }
+          }
+        }
+      }
+    }
+  }
+
+}
+
+:host {
+  ::ng-deep {
+    em {
+      border-bottom: 3px solid rgb(210, 199, 77);
+
+    }
+  }
+}

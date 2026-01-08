@@ -1,0 +1,401 @@
+<div class="wrapper banner-header">
+  <div class="backdrop" style="width: 100%!important;">
+    <div class="h-100">
+      <div class="row align-items-top h-100 mt-2">
+        
+        <div class="col-12 d-flex justify-content-center  mt-2"  [ngClass]="(isXsOrSm$ | async) ? '':'heightdesktop'">
+          <img [src]="image" class="mr-3" [ngClass]="(isXsOrSm$ | async) ? 'widthphone':''" />
+        </div>
+        <div class="col-12 carousel-resource-cards">
+          <div class="carousel-section">
+           
+            <ngb-carousel>
+              <ng-template ngbSlide *ngFor="let object of dctype">
+                <div class="row carouselsection-row px-5 text-primary text-center" style="height: 120px;">
+                  <ng-container *ngFor="let filter of object">
+                    <div [ngClass]="{'col-lg-2': !(isXsOrSm$ | async),'col-lg-12': (isXsOrSm$ | async) }" class="px-3 "
+                      (click)="gotsearchpage(filter._links.search.href.split('?')[1])">
+                      <div class="d-flex flex-column h-100 justify-content-center image-card">
+                        <div class="d-flex align-items-center justify-content-center image-placeholder">
+                          <!-- <i class="fa fa-book img"></i> -->
+                          <i  [ngClass]="geticon(filter.label)" ></i>
+                        </div>
+                        <div class="image-content">
+                          <h5 class="pt-2 ellipsify card-title" title="{{filter.label}}">{{filter.label}}</h5>
+                          <p class="font-weight-bold ellipsify card-subtitle">{{filter.count | dsShortNumber}}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                  </ng-container>
+                </div>
+              </ng-template>
+             
+            </ngb-carousel>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row justify-content-center mt-5 mb-5">
+  <div class="col-12 col-md-10">
+    <ds-search-form [contenttype]="contenttype" modalDialogClass="search-form" centered="true"
+    [showScopeSelector]="true" [inPlaceSearch]="false"
+    [searchPlaceholder]="'home.search-form.placeholder' | translate">
+  </ds-search-form>  
+
+  </div>
+ 
+</div>
+<div class="mt-2 tab-section">
+  <div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <ul ngbNav #nav="ngbNav" class="nav-tabs" style="margin-bottom: 0px!important;">
+        <li ngbNavItem>
+          <a ngbNavLink class="h5">
+            <span>{{'home.page.tab.browseRepository' | translate}}</span>
+          </a>
+          <ng-template ngbNavContent>
+            <div class="row">
+              <div class="col-lg-3 " [ngClass]="{'my_class': !visible}" *ngIf="(isXsOrSm$ | async) ">
+
+                <ds-configuration-search-page (closeSidebar)="closeSidebar()" (openSidebar)="closeSidebar()"
+                  [sideBarWidth]="12" [showViewModes]="false" [searchEnabled]="false" [inPlaceSearch]="false"
+                  [showScopeSelector]="false"></ds-configuration-search-page>
+              </div>
+              <div class="col-lg-9" *ngIf="visible">
+                <ng-container *ngIf="(site$ | async) as site">
+                  <ds-view-tracker [object]="site"></ds-view-tracker>
+                </ng-container>
+               <ds-top-level-community-list top="true"></ds-top-level-community-list>
+                <div class="borderbottom"></div>
+                <ds-recent-item-list *ngIf="recentSubmissionspageSize>0"></ds-recent-item-list>
+              </div>
+              <div class="col-lg-3" *ngIf="!(isXsOrSm$ | async)">
+                <ds-configuration-search-page [sideBarWidth]="12" [showViewModes]="false" [searchEnabled]="false"
+                  [inPlaceSearch]="false" [showScopeSelector]="false"></ds-configuration-search-page>
+              </div>
+        </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink class="h5">
+            <span>{{'home.label.tab.whatstrending' | translate}}</span>
+          </a>
+          <ng-template ngbNavContent>
+           
+          <ul ngbNav #nav="ngbNav" class="nav-tabs mt-2">
+            <li ngbNavItem>
+              <a ngbNavLink><i class="fas fa-chart-line mr-2"></i>{{'home.label.tab.trendingitems' | translate}}</a>
+              <ng-template ngbNavContent>
+                <ds-home-trending-item [collectionorCommunityId]="" type=""></ds-home-trending-item>
+              </ng-template>
+            </li>
+            <li ngbNavItem>
+              <a ngbNavLink><i class="fas fa-chart-pie mr-2"></i>{{'home.label.tab.trendingmetrics' | translate}}</a>
+              <ng-template ngbNavContent>
+                <div class="trending-metrics">
+                  <div class="column-chart">
+                    <ds-home-treding-geolocation [collectionorCommunityId]="" type=""></ds-home-treding-geolocation>
+                  </div>
+                  <div class="column-chart">
+                    <ds-home-treding-searches [collectionorCommunityId]="" type=""></ds-home-treding-searches>
+                  </div>
+                  <hr>
+                  <div class="column-chart">
+                    <ds-home-treding-types [collectionorCommunityId]="" type=""></ds-home-treding-types>
+                  </div>
+                  <hr>
+                  <div class="column-chart">
+                    <ds-home-treding-communities [collectionorCommunityId]="" type=""></ds-home-treding-communities>
+                  </div>
+                </div>
+              </ng-template>
+            </li>
+          </ul>
+          <div [ngbNavOutlet]="nav" class="bg-white"></div>
+          </ng-template>
+        </li>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+  </div>
+</div>
+</div>
+<!-- <div class="tab-section mt-2">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="tab-nav-band">
+          <button class="tablink1 current" onclick="CollectionMainTab1(event,'home')" (click)="mainButtonClick('browse')">{{'home.page.tab.browseRepository' | translate}}</button>
+          <button class="tablink1" onclick="CollectionMainTab1(event,'trending')" (click)="mainButtonClick('chartview')">What's
+            Trending</button>
+        </div>
+        <div id="home" class="text-band1">
+            <div class="row">
+                  <div class="col-lg-3 " [ngClass]="{'my_class': !visible}" *ngIf="(isXsOrSm$ | async) ">
+
+                    <ds-configuration-search-page (closeSidebar)="closeSidebar()" (openSidebar)="closeSidebar()"
+                      [sideBarWidth]="12" [showViewModes]="false" [searchEnabled]="false" [inPlaceSearch]="false"
+                      [showScopeSelector]="false"></ds-configuration-search-page>
+                  </div>
+                  <div class="col-lg-9" *ngIf="visible">
+                    <ng-container *ngIf="(site$ | async) as site">
+                      <ds-view-tracker [object]="site"></ds-view-tracker>
+                    </ng-container>
+
+                    <ds-top-level-community-list top="true"></ds-top-level-community-list>
+                    <div style="margin-bottom:20px; border-bottom: 5px solid #29a8e0 "></div>
+                    <ds-recent-item-list *ngIf="recentSubmissionspageSize>0"></ds-recent-item-list>
+                  </div>
+                  <div class="col-lg-3" *ngIf="!(isXsOrSm$ | async)">
+
+                    <ds-configuration-search-page [sideBarWidth]="12" [showViewModes]="false" [searchEnabled]="false"
+                      [inPlaceSearch]="false" [showScopeSelector]="false"></ds-configuration-search-page>
+                  </div>
+            </div>
+        </div>
+        <div id="trending" class="text-band1" >
+
+
+          <ul ngbNav #nav="ngbNav" class="nav-tabs mt-2">
+            <li ngbNavItem>
+              <a ngbNavLink><i class="fas fa-chart-line mr-2"></i>Trending Items</a>
+              <ng-template ngbNavContent>
+                <ds-home-trending-item [collectionorCommunityId]="" type=""></ds-home-trending-item>
+              </ng-template>
+            </li>
+            <li ngbNavItem>
+              <a ngbNavLink><i class="fas fa-chart-pie mr-2"></i>Trending Metrics</a>
+              <ng-template ngbNavContent>
+                <div class="trending-metrics">
+                  <div class="row align-items-center" style="margin-left: 0px!important;margin-right: 0px!important;">
+                    <ds-home-treding-geolocation [collectionorCommunityId]="" type=""></ds-home-treding-geolocation>
+                  </div>
+                  <div class="column-chart">
+                    <ds-home-treding-searches [collectionorCommunityId]="" type=""></ds-home-treding-searches>
+                  </div>
+                  <hr>
+                  <div class="column-chart">
+                    <ds-home-treding-types [collectionorCommunityId]="" type=""></ds-home-treding-types>
+                  </div>
+                  <hr>
+                  <div class="column-chart">
+                    <ds-home-treding-communities [collectionorCommunityId]="" type=""></ds-home-treding-communities>
+                  </div>
+                </div>
+              </ng-template>
+            </li>
+          </ul>
+          <div [ngbNavOutlet]="nav" class="bg-white" *ngIf="type === 'chartview'"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> -->
+<ng-template #content let-modal>
+  <div class="modal-inner-content">
+    <div class="modal-header">
+      <div class="w-100 titleBar">
+        <h5 class="modal-title text-left">{{'home.label.popup.advancesearchoption' | translate}}</h5>
+      </div>
+      <button type="button" #closeModal class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">×</span>
+      </button>
+    </div>
+    <div class="d-flex justify-content-end w-100 advanceBadge">
+      <button class="btn btn-primary" (click)="onSubmit(advSearchForm.value)">{{'admin.access-control.bulk-access-browse.search.header' | translate}}</button>
+      <button class="btn btn-primary ml-1" (click)="resetAdva()">{{'form.clear' | translate}}</button>
+
+    </div>
+    <div class="modal-body py-0">
+      <form [class]="'ng-invalid'" [formGroup]="advSearchForm">
+        <div class="container titledConatiner searchTerms">
+          <h5 class="title">{{'home.label.popup.entersearchtermsinatleastoneofthefieldsbelow' | translate}}</h5>
+          <div class="row row-content">
+            <div class="col-12 searchKeyward">
+              <div class="row">
+                <div class="col-12 col-md-6">
+                  <label>{{'home.label.popup.selectfiltertype' | translate}}</label>
+                  <select class="form-control" class="form-control" name="filter1" id="filter1"
+                    placeholder="select operator" formControlName="filter1" required>
+                    <ng-container *ngFor="let filter of appConfig.search.advancedFilters.filter;">
+                      <option [value]="filter">
+                        {{'search.filters.filter.' + filter + '.text'| translate}}
+                      </option>
+                    </ng-container>
+                  </select>
+                </div>
+                <div class="col-12 col-md-6 mt-3 mt-md-0">
+                  <!-- <input type="text" class="form-control w-100" id="textsearch1" name="textsearch1"
+            formControlName="textsearch1"> -->
+                  <ds-filter-input-suggestions [suggestions]="(filterSearchResults1 | async)" placeholder=""
+                    label="Enter Text" [action]="currentUrl" [name]="advSearchForm.value.filter1"
+                    formControlName="textsearch1" (submitSuggestion)="onSubmit($event)"
+                    (clickSuggestion)="onClick($event)" (findSuggestions)="findSuggestions($event,'1')"
+                    ngDefaultControl></ds-filter-input-suggestions>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 my-3 searchTitle">
+              <div class="row">
+                <div class="col-12 col-md-6">
+                  <label>{{'home.label.popup.selectfiltertype' | translate}}</label>
+                  <select class="form-control" id="searchKeyward" name="filter2" id="filter2"
+                    placeholder="select operator" formControlName="filter2">
+                    <ng-container *ngFor="let filter of appConfig.search.advancedFilters.filter;">
+                      <option [value]="filter">
+                        {{'search.filters.filter.' + filter + '.text'| translate}}
+                      </option>
+                    </ng-container>
+                  </select>
+                </div>
+                <div class="col-12 col-md-6 mt-3 mt-md-0">
+                  <!-- <input type="text" class="form-control w-100" id="textsearch2" name="textsearch2"
+            formControlName="textsearch2"> -->
+                  <ds-filter-input-suggestions [suggestions]="(filterSearchResults2 | async)" placeholder=""
+                    label="Enter Text" [action]="currentUrl" [name]="advSearchForm.value.filter1"
+                    formControlName="textsearch2" (submitSuggestion)="onSubmit($event)"
+                    (clickSuggestion)="onClick($event)" (findSuggestions)="findSuggestions($event,'2')"
+                    ngDefaultControl></ds-filter-input-suggestions>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 searchAuthor">
+              <div class="row">
+                <div class="col-12 col-md-6">
+                  <label>{{'home.label.popup.selectfiltertype' | translate}}</label>
+                  <select class="form-control" id="searchKeyward" name="filter3" id="filter3"
+                    placeholder="select operator" formControlName="filter3">
+                    <ng-container *ngFor="let filter of appConfig.search.advancedFilters.filter;">
+                      <option [value]="filter">
+                        {{'search.filters.filter.' + filter + '.text'| translate}}
+                      </option>
+                    </ng-container>
+                  </select>
+                </div>
+                <div class="col-12 col-md-6 mt-3 mt-md-0">
+                  <!-- <input type="text" class="form-control w-100" id="textsearch3" name="textsearch3"
+              formControlName="textsearch3"> -->
+                  <ds-filter-input-suggestions [suggestions]="(filterSearchResults3 | async)" placeholder=""
+                    label="Enter Text" [action]="currentUrl" [name]="advSearchForm.value.filter1"
+                    formControlName="textsearch2" (submitSuggestion)="onSubmit($event)"
+                    (clickSuggestion)="onClick($event)" (findSuggestions)="findSuggestions($event,'3')"
+                    ngDefaultControl></ds-filter-input-suggestions>
+                </div>
+              </div>
+            </div>
+          </div> <!-- row-content -->
+        </div>
+        <!-- <div class="container my-3 titledConatiner optionPopular">
+  <h5 class="title">Popular Limits <small>(optional)</small></h5>
+  <div class="row-content">
+    <div class="col-12 d-flex labelcheckbox">
+      <input id="openAccess" type="checkbox" class="">
+      <span class="ml-1 m-0" for="openAccess">Open Access</span>
+    </div>
+  </div> 
+</div> -->
+        <div class="container titledConatiner optionSearchNarrow">
+          <h5 class="title">{{'home.label.popup.narrowyoursearch' | translate}} <small>{{'home.label.popup.optional' | translate}}</small></h5>
+          <div class="row row-content">
+            <div class="col-12">
+              <div class="row year">
+                <div class="col-12 col-md-6 formLabel-col">
+                  <label>{{'home.label.popup.year' | translate}}</label>
+                  <p><span>{{'home.label.popup.returnonlyitemspublishedfrom' | translate}}</span></p>
+                </div>
+                <div class="col-12 col-md-6 formControl-col">
+                  <div class="row">
+                    <!-- <ds-search-range-filter></ds-search-range-filter> -->
+                    <div class="col-5 inputControl">
+                      <input type="text" class="form-control" id="mindate" name="mindate"
+                        formControlName="mindate" />
+                      <span>eg: 1971</span>
+                    </div>
+                    <div class="col-1 d-flex justify-content-center inputControl pt-2">
+                      <span>to:</span>
+                    </div>
+                    <div class="col-5 inputControl">
+                      <input type="text" class="form-control" id="maxdate" name="maxdate"
+                        formControlName="maxdate" />
+                      <span>eg: 1971</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row my-3 ecdsPartner">
+                <div class="col-12 col-md-6 formLabel-col">
+                  <label>AquaDoc Partner</label>
+                </div>
+                <div class="col-12 col-md-6 formControl-col">
+                  <select class="form-control" name="edspartner" id="edspartner" formControlName="edspartner">
+
+                    <option value="123" selected>Any Audience</option>
+                    <ng-container *ngFor="let ecds of ecdspartner;">
+                      <option [value]="ecds.id">{{ecds._name}}</option>
+                    </ng-container>
+
+                  </select>
+                </div>
+              </div>
+              <div class="row my-3 content">
+                <div class="col-12 col-md-6 formLabel-col">
+                  <label>Content</label>
+                  <p><span>Return only items with content</span></p>
+                </div>
+                <div class="col-12 col-md-6 formControl-col">
+                  <select class="form-control" name="ContentTYPE" id="ContentTYPE"
+                    formControlName="ContentTYPE">
+                    <option value="123" selected>Any Content</option>
+                    <ng-container *ngFor="let ecds of contenttype;">
+                      <option [value]="ecds.value">{{ecds.label}}</option>
+                    </ng-container>
+                  </select>
+                </div>
+              </div>
+              <div class="row my-3 format">
+                <div class="col-12 col-md-6 formLabel-col">
+                  <label>Format</label>
+                  <p><span>Return only items with in the format</span></p>
+                </div>
+                <div class="col-12 col-md-6 formControl-col">
+                  <select class="form-control" name="formate" id="formate" formControlName="formate">
+                    <option value="123" selected>ALL Format</option>
+                    <ng-container *ngFor="let lang of bistreamformate;">
+                      <option [value]="lang.mimetype">{{lang.shortDescription}}</option>
+                    </ng-container>
+                  </select>
+                </div>
+              </div>
+              <div class="row language">
+                <div class="col-12 col-md-6 formLabel-col">
+                  <label>Language</label>
+                  <p><span>Return only items with language</span></p>
+                </div>
+                <div class="col-12 col-md-6 formControl-col">
+                  <select class="form-control" name="language" id="language" formControlName="language">
+                    <option value="123" selected>All Language</option>
+                    <ng-container *ngFor="let lang of dcLanguage;">
+                      <option [value]="lang.value">{{lang.label}}</option>
+                    </ng-container>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div> <!-- row-content -->
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <div class="m-0 footerBar">
+        <div class="btn btn-primary" (click)="modal.dismiss('Cross click')">
+          Close
+        </div>
+      </div>
+    </div>
+  </div>
+
+</ng-template>

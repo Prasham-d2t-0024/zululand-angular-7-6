@@ -1,0 +1,310 @@
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { FlashAutoRounded } from '@material-ui/icons';
+import { da } from 'date-fns/locale';
+import moment from 'moment';
+import { ChartService } from 'src/app/core/shared/trending-charts/chart.service';
+
+@Component({
+  selector: 'ds-home-treding-types',
+  templateUrl: './home-treding-types.component.html',
+  styleUrls: ['./home-treding-types.component.scss']
+})
+export class HomeTredingTypesComponent implements OnInit {
+  @Input() collectionorCommunityId;
+  @Input() type;
+  view: any[] = [450, 150];
+  lineChartView: any[] = [650, 300];
+  chartOptions: any = [];
+  lineChart: any = [];
+  timeline: boolean = true;
+  data: any = [];
+  i : number = 0;
+
+  colorScheme1 = 'fire';
+  colorScheme = {
+    domain: ['#003D6E'],
+  };
+  sideCardData:any =[];
+  typeData:any;
+  selectedType:string = 'All Type';
+  totalHits:string;
+  isLoading: boolean = false;
+  isLoading1: boolean = false;
+  isLoading2: boolean = false;
+  xAxisTicks:any;
+  constructor(public chartService: ChartService,
+    public cdRef: ChangeDetectorRef
+  ) {  
+    this.chartOptions = [
+      {
+        "name": "Sri Lanka",
+        "series": [
+          {
+            "value": 4,
+            "name": "2016-09-18"
+          },
+          {
+            "value": 6,
+            "name": "2016-09-20"
+          },
+          {
+            "value": 3,
+            "name": "2016-09-16"
+          },
+          {
+            "value": 5,
+            "name": "2016-09-19"
+          },
+          {
+            "value": 2,
+            "name": "2016-09-24"
+          }
+        ]
+      }
+    ]
+
+    this.lineChart =  [];
+  }
+
+  ngOnInit(): void {
+   this.loadData()
+  }
+
+  getReducedTicks(dates: Date[]): Date[] {
+    if(dates.length> 20) {
+      const maxTicks = 10; // Define the maximum number of ticks to show
+      const tickInterval = Math.max(1, Math.floor(dates.length / maxTicks)); // Calculate interval
+    
+      // Filter dates to only include the ones to show on the axis
+      return dates.filter((_, index) => index % tickInterval === 0);
+    } else {
+      return dates;
+    }
+  }
+
+  loadData() {
+    this.isLoading = true;
+    this.isLoading1 = true;
+    this.isLoading2 = true;
+    const call1 = this.collectionorCommunityId ? '/getTrendingTypesLineChart?top=10&dateType='+this.i+'&collectionorcommunityid='+this.collectionorCommunityId+ '&type='+this.type : '/getTrendingTypesLineChart?top=10&dateType='+this.i;
+    this.chartService.findAllByGeolocation(call1).pipe().subscribe((data :any)=>{
+      this.isLoading = false;
+      if(data) {
+        this.lineChart = data;
+        // Extract dates from all series into a single array
+        const allDates = [];
+        this.lineChart.forEach((series: any) => {
+          series.series.forEach((item: any) => {
+            allDates.push(new Date(item.name)); // Extracting date from the "name" field
+          });
+        });
+    
+        // Get unique dates
+        const uniqueDates = Array.from(new Set(allDates.map(date => date.getTime())))
+                                   .map(time => new Date(time)); // Remove duplicates
+    
+        // Reduce the ticks based on unique dates
+        if(uniqueDates.length >20) {
+          this.xAxisTicks = this.getReducedTicks(uniqueDates); // Apply tick reduction logic
+          for (let i = 0; i < this.xAxisTicks.length; i++) {
+            this.xAxisTicks[i] = moment(this.xAxisTicks[i]).format('YYYY-MM-DD');
+          }
+        } else {
+          this.xAxisTicks = uniqueDates;
+
+          // Format all dates to 'YYYY-MM-DD'
+          for (let i = 0; i < this.xAxisTicks.length; i++) {
+            this.xAxisTicks[i] = moment(this.xAxisTicks[i]).format('YYYY-MM-DD');
+          }
+        
+        }
+      }
+      
+      // for(const i of data) {
+      //   if (i && i['series'] && Array.isArray(i['series'])) {
+      //     // Group by date and sum values if needed, or keep each date entry as-is.
+      //     const uniqueSeries = [];
+      //     this.chartOptions = [];
+      //     i['series'].forEach((entry) => {
+      //       // Find if the date already exists in the uniqueSeries array
+      //       const existingEntry = uniqueSeries.find(e => e.name === entry.name);
+      
+      //       if (existingEntry) {
+      //         // If it exists, add the value (convert to number for addition)
+      //         existingEntry.value += Number(entry.value);
+      //       } else {
+      //         // If it doesn't exist, add a new entry with date and value
+      //         uniqueSeries.push({
+      //           name: entry.name,
+      //           value: Number(entry.value)
+      //         });
+      //       }
+      //     });
+      
+      //     // Assign the transformed data to chartOptions in the required format
+      //     this.lineChart.push(
+      //       {
+      //         name: data['name'],
+      //         series: uniqueSeries
+      //       }
+      //     )
+            
+      //   } else {
+      //     console.error("Data is not in the expected format:", data);
+      //     this.chartOptions = [];
+      //   }
+      // }
+      
+      this.cdRef.detectChanges();
+    });
+    const call2 = this.collectionorCommunityId ? '/getTrendingTypesData?top=10&dateType='+this.i+'&collectionorcommunityid='+this.collectionorCommunityId+ '&type='+this.type : '/getTrendingTypesData?top=10&dateType='+this.i;
+    this.chartService.findAllByGeolocation(call2).pipe().subscribe((data)=>{
+      if(data) {
+        this.isLoading1 = false;
+        this.isLoading2 = false;
+        this.sideCardData = data['tradingData'];
+        this.totalHits = data['totalhits'];
+        if (data && data['tradingLineChart']['series'] && Array.isArray(data['tradingLineChart']['series'])) {
+          const uniqueSeries = [];
+          this.chartOptions = [];
+          data['tradingLineChart']['series'].forEach((entry) => {
+            const existingEntry = uniqueSeries.find(e => e.name === entry.name);
+            if (existingEntry) {
+              existingEntry.value += Number(entry.value);
+            } else {
+              uniqueSeries.push({
+                name: entry.name,
+                value: Number(entry.value)
+              });
+            }
+          });
+          this.chartOptions = uniqueSeries;
+          this.cdRef.detectChanges();
+        } else {
+          console.error("Data is not in the expected format:", data);
+          this.chartOptions = [];
+        }
+      } else {
+        this.isLoading1 = false;
+        this.isLoading2 = false;
+        this.cdRef.detectChanges();
+      }
+     
+      
+    });
+    const call3 = this.collectionorCommunityId ? '/getTrendingTypes?top=10&dateType='+this.i+'&collectionorcommunityid='+this.collectionorCommunityId+ '&type='+this.type :  '/getTrendingTypes?top=10&dateType='+this.i;
+    this.chartService.findAllByGeolocation(call3).pipe().subscribe((data)=>{
+      if(data) {
+        this.typeData = data;
+        this.cdRef.detectChanges();
+      }
+      
+    });
+  }
+
+  onSelect(event: any) {
+    if (event === '') {
+      this.selectedType = "All Types";
+      this.isLoading1 = true;
+      this.isLoading2 = true;
+      const call2 = this.collectionorCommunityId ? '/getTrendingTypesData?top=10&dateType=' + this.i + '&collectionorcommunityid=' + this.collectionorCommunityId+ '&type='+this.type : '/getTrendingTypesData?top=10&dateType=' + this.i;
+      this.chartService.findAllByGeolocation(call2).pipe().subscribe((data) => {
+        this.isLoading1 = false;
+        this.isLoading2 = false;
+        if (data) {
+          this.sideCardData = data['tradingData'];
+          this.totalHits = data['totalhits'];
+          // this.chartOptions = data['tradingLineChart'];
+          if (data && data['tradingLineChart']['series'] && Array.isArray(data['tradingLineChart']['series'])) {
+            // Group by date and sum values if needed, or keep each date entry as-is.
+            const uniqueSeries = [];
+            this.chartOptions = [];
+            data['tradingLineChart']['series'].forEach((entry) => {
+              // Find if the date already exists in the uniqueSeries array
+              const existingEntry = uniqueSeries.find(e => e.name === entry.name);
+        
+              if (existingEntry) {
+                // If it exists, add the value (convert to number for addition)
+                existingEntry.value += Number(entry.value);
+              } else {
+                // If it doesn't exist, add a new entry with date and value
+                uniqueSeries.push({
+                  name: entry.name,
+                  value: Number(entry.value)
+                });
+              }
+            });
+        
+            // Assign the transformed data to chartOptions in the required format
+            this.chartOptions = uniqueSeries;
+            // this.chartOptions = [
+            //   {
+            //     name: data['tradingLineChart']['name'] !== null ? data['tradingLineChart']['name']:'',
+            //     series: uniqueSeries
+            //   }
+            // ];
+          } else {
+            console.error("Data is not in the expected format:", data);
+            this.chartOptions = [];
+          }
+          this.cdRef.detectChanges();
+        }
+      });
+
+    } else {
+      this.selectedType = event;
+      this.isLoading1 = true;
+      this.isLoading2 = true;
+      const call2 = this.collectionorCommunityId ? '/getTrendingTypesData?top=10&trendingtypes=' + this.selectedType + '&dateType=' + this.i + '&collectionorcommunityid=' + this.collectionorCommunityId+ '&type='+this.type : '/getTrendingTypesData?top=10&trendingtypes=' + this.selectedType + '&dateType=' + this.i;
+      this.chartService.findAllByGeolocation(call2).pipe().subscribe((data) => {
+        this.isLoading1 = false;
+      this.isLoading2 = false;
+        if (data) {
+          this.sideCardData = data['tradingData'];
+          this.totalHits = data['totalhits'];
+          // this.chartOptions = data['tradingLineChart'];
+          if (data && data['tradingLineChart']['series'] && Array.isArray(data['tradingLineChart']['series'])) {
+            // Group by date and sum values if needed, or keep each date entry as-is.
+            const uniqueSeries = [];
+            this.chartOptions = [];
+            data['tradingLineChart']['series'].forEach((entry) => {
+              // Find if the date already exists in the uniqueSeries array
+              const existingEntry = uniqueSeries.find(e => e.name === entry.name);
+        
+              if (existingEntry) {
+                // If it exists, add the value (convert to number for addition)
+                existingEntry.value += Number(entry.value);
+              } else {
+                // If it doesn't exist, add a new entry with date and value
+                uniqueSeries.push({
+                  name: entry.name,
+                  value: Number(entry.value)
+                });
+              }
+            });
+        
+            // Assign the transformed data to chartOptions in the required format
+            this.chartOptions = uniqueSeries;
+            // this.chartOptions = [
+            //   {
+            //     name: data['tradingLineChart']['name'] !== null ? data['tradingLineChart']['name']:'',
+            //     series: uniqueSeries
+            //   }
+            // ];
+          } else {
+            console.error("Data is not in the expected format:", data);
+            this.chartOptions = [];
+          }
+          this.cdRef.detectChanges();
+        }
+      });
+    }
+  }
+
+  buttonClick(i) {
+    this.i = i;
+    this.selectedType === "All Types";
+    this.loadData();
+  }
+
+}

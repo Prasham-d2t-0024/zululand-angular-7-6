@@ -1,0 +1,7 @@
+<div *ngIf="content" class="content-with-optional-title mb-2">
+    <h3 class="d-inline-block h6 m-0" *ngIf="title">{{ title | translate }}</h3>
+    <div class="d-flex align-items-center">
+        <i class="fa fa-globe mr-2 text-primary"></i>
+        <a href="{{getHandle()}}">{{getHandle()}}</a>
+    </div>
+</div>

@@ -1,0 +1,721 @@
+import { Component, Inject, OnInit, ElementRef, ViewChild, ChangeDetectorRef, Injector, Input } from '@angular/core';
+import { map } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Observable, combineLatest } from 'rxjs';
+import { Site } from '../core/shared/site.model';
+import { environment } from '../../environments/environment';
+import { HostWindowService } from '../shared/host-window.service';
+import { NgbCarousel, NgbCarouselConfig, NgbModal, NgbNavChangeEvent } from '@ng-bootstrap/ng-bootstrap';
+import { SearchService } from '../core/shared/search/search.service';
+import { FILTER_CONFIG, IN_PLACE_SEARCH, REFRESH_FILTER, SearchFilterService } from '../core/shared/search/search-filter.service';
+import { SearchFilterConfig } from '../shared/search/models/search-filter-config.model';
+import { SearchOptions } from '../shared/search/models/search-options.model';
+import { debounceTime, distinctUntilChanged, filter, mergeMap, switchMap, take, tap } from 'rxjs/operators';
+import { getAllCompletedRemoteData, getFirstCompletedRemoteData, getFirstSucceededRemoteData } from '../core/shared/operators';
+import { SEARCH_CONFIG_SERVICE } from '../my-dspace-page/my-dspace-page.component';
+import { SearchConfigurationService } from '../core/shared/search/search-configuration.service';
+import { RemoteData } from '../core/data/remote-data';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SupersetService } from '../core/data/SupersetService-data.service';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  HostListener,
+  PLATFORM_ID,
+} from '@angular/core';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { APP_CONFIG, AppConfig } from 'src/config/app-config.interface';
+import { FormBuilder } from '@angular/forms';
+import { CommunityDataService } from '../core/data/community-data.service';
+import { BitstreamFormatDataService } from '../core/data/bitstream-format-data.service';
+import { InputSuggestion } from '../shared/input-suggestions/input-suggestions.model';
+import {
+  BehaviorSubject,
+  combineLatest as observableCombineLatest,
+  of as observableOf,
+  Subject,
+  Subscription
+} from 'rxjs';
+import { hasNoValue, hasValue, isNotEmpty } from '../shared/empty.util';
+import { PaginatedList } from '../core/data/paginated-list.model';
+import { FacetValue } from '../shared/search/models/facet-value.model';
+import { getFacetValueForType, stripOperatorFromFilterValue } from '../shared/search/search.utils';
+import { EmphasizePipe } from '../shared/utils/emphasize.pipe';
+import { FilterType } from '../shared/search/models/filter-type.model';
+import { renderFilterType } from '../shared/search/search-filters/search-filter/search-filter-type-decorator';
+import { GenericConstructor } from '../core/shared/generic-constructor';
+import { SearchFacetFilterComponent } from '../shared/search/search-filters/search-filter/search-facet-filter/search-facet-filter.component';
+import { currentPath } from '../shared/utils/route.utils';
+import { PaginatedSearchOptions } from '../shared/search/models/paginated-search-options.model';
+import { Context } from '../core/shared/context.model';
+import { SortOptions } from '../core/cache/models/sort-options.model';
+import { SearchConfig } from '../core/shared/search/search-filters/search-config.model';
+import { DSpaceObjectType } from '../core/shared/dspace-object-type.model';
+import { FacetValues } from '../shared/search/models/facet-values.model';
+import { RemoteDataBuildService } from '../core/cache/builders/remote-data-build.service';
+import { ChartService } from '../core/shared/trending-charts/chart.service';
+import { FindListOptions } from '../core/data/find-list-options.model';
+import { Chart } from '../core/shared/trending-charts/chart.model';
+import { ViewMode } from '../core/shared/view-mode.model';
+import { Item } from '../core/shared/item.model';
+import { th } from 'date-fns/locale';
+import { App_Config } from '../app-config';
+
+
+@Component({
+  selector: 'ds-home-page',
+  styleUrls: ['./home-page.component.scss'],
+  templateUrl: './home-page.component.html',
+
+})
+export class HomePageComponent implements OnInit, AfterViewInit {
+  image = App_Config.homePageImage
+  isXsOrSm$: Observable<boolean>;
+  site$: Observable<Site>;
+  recentSubmissionspageSize: number;
+  filter: SearchFilterConfig;
+  filterLanguage: SearchFilterConfig;
+  searchOptions$: Observable<SearchOptions>;
+  dctype: any = [];
+  contenttype: any = [];
+  ecdspartner: any = [];
+  firsttimeload: boolean = true;
+  dcLanguage: any = [];
+  bistreamformate: any = [];
+  visible: boolean = true;
+  active = 1;
+  sidebarClasses: Observable<string>;
+  advSearchForm: FormGroup;
+  findAllOptions = { elementsPerPage: 1000 };
+  @ViewChild("dashboard") private dashboardElement: ElementRef;
+  @ViewChild('closeModal') closeModal: ElementRef;
+  filterSearchResults1: Observable<InputSuggestion[]> = observableOf([]);
+  filterSearchResults2: Observable<InputSuggestion[]> = observableOf([]);
+  filterSearchResults3: Observable<InputSuggestion[]> = observableOf([]);
+  filter1: string;
+  currentUrl: string;
+   /**
+   * Injector to inject a child component with the @Input parameters
+   */
+   objectInjector: Injector;
+   searchFilter: GenericConstructor<SearchFacetFilterComponent>;
+   /**
+   * Emits the active values for this filter
+   */
+  selectedValues$: Observable<FacetValue[]>;
+  /**
+   * An observable containing configuration about which filters are shown and how they are shown
+   */
+  filtersRD$: BehaviorSubject<RemoteData<SearchFilterConfig[]>> = new BehaviorSubject<RemoteData<SearchFilterConfig[]>>(null);
+   /**
+   * The current paginated search options
+   */
+   searchOptions1$: BehaviorSubject<PaginatedSearchOptions> = new BehaviorSubject<PaginatedSearchOptions>(null);
+   /**
+   * Link to the search page
+   */
+  searchLink: string;
+  /**
+   * The current context used during the search
+   */
+  currentContext$: BehaviorSubject<Context> = new BehaviorSubject<Context>(null);
+
+  context: Context = Context.Search;
+  @Input() configuration;
+  paginationId = 'spc';
+  /**
+   * Subscriptions to unsubscribe from
+   */
+  subs: Subscription[] = [];
+  query: string;
+  allFilters:any;
+
+   /**
+   * State of the requested facets used to time the animation
+   */
+   animationState = 'loading';
+   protected collapseNextUpdate = true;
+   /**
+   * Emits the current last shown page of this facet's values
+   */
+  currentPage: Observable<number>;
+  /**
+   * Emits true if the current page is also the last page available
+   */
+  isLastPage$: BehaviorSubject<boolean> = new BehaviorSubject(false);
+   /**
+   * Emits an array of pages with values found for this facet
+   */
+   filterValues$: Subject<RemoteData<PaginatedList<FacetValue>[]>>;
+
+   @ViewChild('carousel') carousel: NgbCarousel;
+   config: FindListOptions = Object.assign(new FindListOptions(), {
+    elementsPerPage: 10
+  });
+  cardData: any = [];
+
+  constructor(private elementRef: ElementRef,
+    @Inject(APP_CONFIG) protected appConfig: AppConfig,
+    private embedService: SupersetService,
+    protected service: SearchService,
+    protected router: Router,
+    private searchService: SearchService,
+    protected windowService: HostWindowService,
+    private route: ActivatedRoute,
+    private sanitizer: DomSanitizer,
+    config: NgbCarouselConfig,
+    private _router: Router,
+    @Inject(DOCUMENT) private document: any,
+    private modalService: NgbModal,
+    @Inject(PLATFORM_ID) private platformId: any,
+    private formBuilder: FormBuilder,
+     public searchConfigService: SearchConfigurationService,
+    private cdRef: ChangeDetectorRef,
+    private cds: CommunityDataService,
+    private bitstreamFormatService: BitstreamFormatDataService,
+    @Inject(FILTER_CONFIG) public filterConfig: SearchFilterConfig,
+    private injector: Injector,
+    @Inject(IN_PLACE_SEARCH) public inPlaceSearch: boolean,
+    @Inject(REFRESH_FILTER) public refreshFilters: BehaviorSubject<boolean>,
+    protected filterService: SearchFilterService,
+    protected rdbs: RemoteDataBuildService,
+    public chartService: ChartService
+  ) {
+    
+    config.interval = 8000;
+    config.keyboard = false;
+    config.pauseOnHover = true;
+    config.animation = true;
+    this.recentSubmissionspageSize = environment.homePage.recentSubmissions.pageSize;
+    this.isXsOrSm$ = this.windowService.isXsOrSm();
+    this.currentUrl = this._router.url;
+   // console.log(appConfig.search.advancedFilters.filter)
+   this.chartOptions = [
+    {
+      "name": "Sri Lanka",
+      "series": [
+        {
+          "value": 4,
+          "name": "2016-09-18"
+        },
+        {
+          "value": 6,
+          "name": "2016-09-20"
+        },
+        {
+          "value": 3,
+          "name": "2016-09-16"
+        },
+        {
+          "value": 5,
+          "name": "2016-09-19"
+        },
+        {
+          "value": 2,
+          "name": "2016-09-24"
+        }
+      ]
+    }
+  ]
+  }
+  gotsearchpage(query) {
+   
+    let data = query.split('=');
+    const queryParams = { [data[0]]: decodeURI(data[1]) };
+    this._router.navigate(['/search'], {queryParams});
+  }
+  getSafeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+  embedSupersetDashboard(): void {
+   // debugger;
+    //const dashboardElement = this.elementRef.nativeElement.querySelector('#dashboard');
+
+    if (this.dashboardElement) {
+      this.embedService.embedDashboard(document.getElementById('dashboard'), '4b310960-0566-494b-96ee-33d6d96c47a2').subscribe(
+        () => {
+         // debugger;
+          // Adjust the size of the embedded iframe
+          const iframe = this.dashboardElement.nativeElement.querySelector('iframe');
+          if (iframe) {
+            iframe.style.width = '100%'; // Set the width as needed
+            iframe.style.height = '500px';
+            iframe.classList.add = 'iframe-container';// Set the height as needed
+           
+          }
+          this.cdRef.detectChanges();
+        },
+        (error) => {
+          console.error(error);
+        }
+       
+      );
+    }
+  }
+  onNavChange(changeEvent: NgbNavChangeEvent) {
+    if (changeEvent.nextId === 2) {
+      if (isPlatformBrowser(this.platformId)) {
+      //  this.embedSupersetDashboard();
+      }
+
+
+    }
+  }
+
+  advanceSearch(content) {
+    if (this.firsttimeload) {
+      this.firsttimeload = false;
+      this.cds.findTop({
+        currentPage: 1,
+        elementsPerPage: 100,
+      }).pipe(getAllCompletedRemoteData()).subscribe((results) => {
+        this.ecdspartner = results.payload.page;
+        //console.log(this.ecdspartner)
+      });
+      /*
+   * Languge filter
+  */
+      this.searchConfigService.getConfig("", undefined).pipe(
+        getFirstCompletedRemoteData(),
+      ).subscribe((filtersRD: RemoteData<SearchFilterConfig[]>) => {
+        this.filterLanguage = filtersRD.payload.find(x => x.name === 'language');
+        this.filterLanguage.pageSize = 100;
+        this.searchService.getFacetValuesFor(this.filterLanguage, 1, null).pipe(getFirstSucceededRemoteData()).subscribe((rd: any) => {
+          this.dcLanguage = rd.payload.page;
+          this.cdRef.detectChanges();
+        })
+      })
+    }
+    this.bitstreamFormatService.findAll(this.findAllOptions).pipe(getAllCompletedRemoteData()).subscribe((rd) => {
+      this.bistreamformate = rd.payload.page;
+      this.cdRef.detectChanges();
+    })
+    this.modalService.open(content);
+  }
+  resetAdva(){
+    this.advSearchForm.reset({ formate:'123', maxdate:'',mindate:'', language: '123', edspartner: '123', ContentTYPE:'123',textsearch1: '', textsearch2: '', textsearch3: '', filter1: 'title', filter2: 'author', filter3: 'subject',  })
+  }
+  paramName(filter) {
+    return 'f.' + filter;
+  }
+  onSubmit(data) {
+    if (data.textsearch1 == "" && data.textsearch2 == "" && data.textsearch3 == "" && data.mindate == "" && data.maxdate == "" && data.language == "123" && data.edspartner == "123" && data.ContentTYPE == "123" && data.formate =='123') {
+      return false;
+    } else {
+      let queryParams = {};
+      if (data.textsearch1 != "") {
+        queryParams[this.paramName(data.filter1)] = data.textsearch1 + ",contains";        
+      }
+      if (data.textsearch2 != "") {
+        queryParams[this.paramName(data.filter2)] = data.textsearch2 + ",contains";
+      }
+      if (data.textsearch3 != "") {
+        queryParams[this.paramName(data.filter3)] = data.textsearch3 + ",contains";
+      }
+      if (data.maxdate != "") {
+        queryParams['f.dateIssued.max'] = data.maxdate ;
+      }
+      if (data.mindate != "") {
+        queryParams['f.dateIssued.min'] = data.mindate ;
+      }
+      if (data.edspartner != "123") {
+        queryParams['scope'] = data.edspartner;
+      }
+      if (data.language != "123") {
+        queryParams['f.language'] = data.language + ",equals";
+      }
+      if (data.ContentTYPE != "123") {
+        queryParams['f.itemtype'] = data.ContentTYPE + ",equals";
+      } 
+      if (data.formate != "123") {
+        queryParams['f.format'] = data.formate + ",equals";
+      } 
+
+      this.modalService.dismissAll();
+      this.router.navigate([this.searchService.getSearchLink()], { queryParams: queryParams, queryParamsHandling: 'merge' });
+    }
+  }
+  
+  ngOnInit() {
+    // if (isPlatformBrowser(this.platformId)) {
+    //   this.embedSupersetDashboard();
+    // }
+  }
+
+  castingObject(item:any) :Item{
+    return Object.assign(new Item(),item);
+  }
+
+  ngAfterViewInit(): void {
+    this.searchFilter = this.getSearchFilter();
+    this.objectInjector = Injector.create({
+      providers: [
+        { provide: FILTER_CONFIG, useFactory: () => (this.filterConfig), deps: [] },
+        { provide: IN_PLACE_SEARCH, useFactory: () => (this.inPlaceSearch), deps: [] },
+        { provide: REFRESH_FILTER, useFactory: () => (this.refreshFilters), deps: [] }
+      ],
+      parent: this.injector
+    });
+    
+    this.advSearchForm = this.formBuilder.group({
+      textsearch1: new FormControl('', {}),
+      textsearch2: new FormControl('', {
+        
+      }),
+      textsearch3: new FormControl('', {
+       
+      }),
+      filter1: new FormControl('title', {}),
+      filter2: new FormControl('author', {
+        
+      }),
+      filter3: new FormControl('subject',{}),
+      language: new FormControl('123', {}),
+      edspartner: new FormControl('123', {}),
+      ContentTYPE: new FormControl('123', {}),
+      maxdate: new FormControl('', {}),
+      mindate: new FormControl('', {}),
+      formate: new FormControl('123', {}),
+    });
+    
+    this.searchConfigService.setPaginationId('spc');
+  //  this.filter.name = 'subject';
+    this.site$ = this.route.data.pipe(
+      map((data) => data.site as Site),
+    );
+    /// this type of item 
+    this.searchConfigService.getConfig("", undefined).pipe(
+      getFirstCompletedRemoteData(),
+    ).subscribe((filtersRD: RemoteData<SearchFilterConfig[]>) => {
+      this.allFilters = filtersRD.payload;
+      this.filter = filtersRD.payload.find(x => x.name === 'itemtype');
+      //console.log(this.filter);
+      this.filter.pageSize = 100;
+      
+      this.searchService.getFacetValuesFor(this.filter, 1, null).pipe(getFirstSucceededRemoteData()).subscribe((rd: any) => {
+        let a = rd.payload.page;
+        this.contenttype = rd.payload.page;
+        this.contenttype = [...this.contenttype].sort((a, b) => a.label.localeCompare(b.label));
+        this.isXsOrSm$.pipe(take(1)).subscribe((mobile) => {
+          if (mobile) {
+            for (let i = 0; i < a.length; i += 1) {
+              this.dctype.push(a.slice(i, i + 1));
+            }
+          } else {
+            for (let i = 0; i < a.length; i += 6) {
+              this.dctype.push(a.slice(i, i + 6));
+            }
+          }
+          
+        })
+      })
+      
+    })
+    this.searchOptions$ = this.searchConfigService.searchOptions;
+    // this.subs.push(
+    //   this.searchOptions$.subscribe(() => this.updateFilterValueList()),
+    //   this.refreshFilters.asObservable().pipe(
+    //     filter((toRefresh: boolean) => toRefresh),
+    //     // NOTE This is a workaround, otherwise retrieving filter values returns tha old cached response
+    //     debounceTime((100)),
+    //     mergeMap(() => this.retrieveFilterValues(false))
+    //   ).subscribe()
+    // );
+    // this.retrieveFilterValues().subscribe();
+   
+  }
+  /**
+   * Prepare for refreshing the values of this filter
+   */
+  updateFilterValueList() {
+    this.animationState = 'loading';
+    this.collapseNextUpdate = true;
+    this.filter1 = '';
+  }
+
+  /**
+   * Make sure only the first page is shown
+   */
+  showFirstPageOnly() {
+    this.filterService.resetPage(this.filterConfig.name);
+  }
+
+  protected retrieveFilterValues(useCachedVersionIfAvailable = true): Observable<RemoteData<PaginatedList<FacetValue>[]>> {
+    const facetValues$ = observableCombineLatest([this.searchOptions$, this.currentPage]).pipe(
+      map(([options, page]) => {
+        return { options, page };
+      }),
+      switchMap(({ options, page }) => {
+        //console.log("options...1111", options)
+       // console.log("page...1111", page)
+        return this.searchService.getFacetValuesFor(this.filterConfig, page, options, null, useCachedVersionIfAvailable)
+          .pipe(
+            getFirstSucceededRemoteData(),
+            tap((rd: RemoteData<FacetValues>) => {
+              this.isLastPage$.next(hasNoValue(rd?.payload?.next));
+            }),
+            map((rd: RemoteData<FacetValues>) => ({
+                values: observableOf(rd),
+                page: page
+              })
+            )
+          );
+      })
+    );
+
+    let filterValues = [];
+    return facetValues$.pipe(
+      mergeMap((facetOutcome) => {
+        const newValues$ = facetOutcome.values;
+
+        if (this.collapseNextUpdate) {
+          this.showFirstPageOnly();
+          facetOutcome.page = 1;
+          this.collapseNextUpdate = false;
+        }
+        if (facetOutcome.page === 1) {
+          filterValues = [];
+        }
+
+        filterValues = [...filterValues, newValues$];
+
+        return this.rdbs.aggregate(filterValues);
+      }),
+      tap((rd: RemoteData<PaginatedList<FacetValue>[]>) => {
+        this.selectedValues$ = this.filterService.getSelectedValuesForFilter(this.filterConfig).pipe(
+          map((selectedValues) => {
+            return selectedValues.map((value: string) => {
+              const fValue = [].concat(...rd.payload.map((page) => page.page))
+                               .find((facetValue: FacetValue) => this.getFacetValue(facetValue) === value);
+              if (hasValue(fValue)) {
+                return fValue;
+              }
+              const filterValue = stripOperatorFromFilterValue(value);
+              return Object.assign(new FacetValue(), { label: filterValue, value: filterValue });
+            });
+          })
+        );
+      }),
+      tap((rd: RemoteData<PaginatedList<FacetValue>[]>) => {
+        this.animationState = 'ready';
+        this.filterValues$.next(rd);
+      })
+    );
+  }
+ /**
+   * Get the current paginated search options
+   * @returns {Observable<PaginatedSearchOptions>}
+   */
+ protected getSearchOptions(): Observable<PaginatedSearchOptions> {
+  return this.searchConfigService.paginatedSearchOptions;
+}
+  /**
+   * Set the sidebar to a collapsed state
+   */
+  public closeSidebar(): void {
+
+    this.visible = !this.visible;
+  }
+
+  /**
+   * Updates the found facet value suggestions for a given query
+   * Transforms the found values into display values
+   * @param data The query for which is being searched
+   */
+  findSuggestions(data:any,number:string): void {
+if(number === '1') {
+  const fill = this.allFilters.find(filter => filter.name === this.advSearchForm.value.filter1);
+  if (isNotEmpty(data)) {
+    this.searchOptions$.pipe(take(1)).subscribe(
+      (options) => {
+        this.filterSearchResults1 = this.searchService.getFacetValuesFor(fill, 1, options, data.toLowerCase())
+          .pipe(
+            getFirstSucceededRemoteData(),
+            map(
+              (rd: RemoteData<PaginatedList<FacetValue>>) => {
+                return rd.payload.page.map((facet) => {
+                  return {
+                    displayValue: this.getDisplayValue(facet, data),
+                    query: this.getFacetValue(facet),
+                    value: stripOperatorFromFilterValue(this.getFacetValue(facet))
+                  };
+                });
+              }
+            ));
+      }
+    );
+  } else {
+    this.filterSearchResults1 = observableOf([]);
+  }
+} else if(number === '2') {
+  const fill = this.allFilters.find(filter => filter.name === this.advSearchForm.value.filter2);
+  if (isNotEmpty(data)) {
+    this.searchOptions$.pipe(take(1)).subscribe(
+      (options) => {
+        this.filterSearchResults2 = this.searchService.getFacetValuesFor(fill, 1, options, data.toLowerCase())
+          .pipe(
+            getFirstSucceededRemoteData(),
+            map(
+              (rd: RemoteData<PaginatedList<FacetValue>>) => {
+                return rd.payload.page.map((facet) => {
+                  return {
+                    displayValue: this.getDisplayValue(facet, data),
+                    query: this.getFacetValue(facet),
+                    value: stripOperatorFromFilterValue(this.getFacetValue(facet))
+                  };
+                });
+              }
+            ));
+      }
+    );
+  } else {
+    this.filterSearchResults2 = observableOf([]);
+  }
+} else if(number === '3') {
+  const fill = this.allFilters.find(filter => filter.name === this.advSearchForm.value.filter3);
+  if (isNotEmpty(data)) {
+    this.searchOptions$.pipe(take(1)).subscribe(
+      (options) => {
+        this.filterSearchResults3 = this.searchService.getFacetValuesFor(fill, 1, options, data.toLowerCase())
+          .pipe(
+            getFirstSucceededRemoteData(),
+            map(
+              (rd: RemoteData<PaginatedList<FacetValue>>) => {
+                return rd.payload.page.map((facet) => {
+                  return {
+                    displayValue: this.getDisplayValue(facet, data),
+                    query: this.getFacetValue(facet),
+                    value: stripOperatorFromFilterValue(this.getFacetValue(facet))
+                  };
+                });
+              }
+            ));
+      }
+    );
+  } else {
+    this.filterSearchResults3 = observableOf([]);
+  }
+}  
+   
+  }
+
+   /**
+   * Retrieve facet value
+   */
+   protected getFacetValue(facet: FacetValue): string {
+    return getFacetValueForType(facet, this.filterConfig);
+  }
+
+    /**
+   * Transforms the facet value string, so if the query matches part of the value, it's emphasized in the value
+   * @param {FacetValue} facet The value of the facet as returned by the server
+   * @param {string} query The query that was used to search facet values
+   * @returns {string} The facet value with the query part emphasized
+   */
+    getDisplayValue(facet: FacetValue, query: string): string {
+      return new EmphasizePipe().transform(facet.value, query) + ' (' + facet.count + ')';
+    }
+ /**
+   * Find the correct component based on the filter config's type
+   */
+ private getSearchFilter() {
+  const type: FilterType = this.filterConfig.filterType;
+  return renderFilterType(type);
+}
+
+/**
+   * Submits a selected filter value to the filter
+   * Take the query from the InputSuggestion object
+   * @param data The input suggestion selected
+   */
+onClick(data: InputSuggestion) {
+  this.applyFilterValue(data.query);
+}
+
+/**
+   * Build the filter query using the value given and apply to the search.
+   * @param data The string from the input field
+   */
+protected applyFilterValue(data) {
+  if (data.match(new RegExp(`^.+,(equals|query|authority)$`))) {
+    this.selectedValues$.pipe(take(1)).subscribe((selectedValues) => {
+      if (isNotEmpty(data)) {
+        this.router.navigate(this.getSearchLinkParts(), {
+          queryParams:
+            {
+              [this.filterConfig.paramName]: [
+                ...selectedValues.map((facet) => this.getFacetValue(facet)),
+                data
+              ]
+            },
+          queryParamsHandling: 'merge'
+        });
+        // this.filter = '';
+      }
+      this.filterSearchResults1 = observableOf([]);
+    });
+  }
+}
+
+ /**
+   * @returns {string[]} The base path to the search page, or the current page when inPlaceSearch is true, split in separate pieces
+   */
+ public getSearchLinkParts(): string[] {
+  if (this.inPlaceSearch) {
+    return [];
+  }
+  return this.getSearchLink().split('/');
+}
+ /**
+   * @returns {string} The base path to the search page, or the current page when inPlaceSearch is true
+   */
+ public getSearchLink(): string {
+  if (this.inPlaceSearch) {
+    return currentPath(this.router);
+  }
+  return this.searchService.getSearchLink();
+ }
+  
+  public geticon(filtername) {
+    if (filtername.includes('Communication')) {
+      return 'fa fa-video-camera img';
+    } else if (filtername.includes('Article')) { 
+      return 'fa fa-file-text img';
+    } else if (filtername.includes('Book')) {
+      return 'fas fa-book-open img';
+    } else if (filtername.includes('Video')) {
+      return 'fa fa-video-camera img';
+    } else if (filtername.includes('Conference')) {
+      return 'fa fa-users img';
+    } else {
+      return 'fa fa-book img';
+    }
+  }
+
+  cardChartdata = [];
+  lineChartdata = [];
+  barChartOptions : Observable<RemoteData<PaginatedList<Chart>>>;
+  i:number=0;
+  chartOptions:any = [];
+  timeline: boolean = true;
+  view: any[] = [275, 150];
+  colorScheme = { 
+    domain: ['#26A0FC', '#FEB019', '#FF4560']
+  };
+  viewMode = ViewMode.ListElement;
+  buttonClick(j) {
+    this.i = j;
+  }
+  type:string = 'home';
+  mainButtonClick(value:string) {
+    if(value === 'chartview') {
+      this.type = 'chartview';
+    } else {
+      this.type = 'home';
+    }
+
+  }
+
+  
+}

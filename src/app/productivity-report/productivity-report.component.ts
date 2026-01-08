@@ -1,0 +1,339 @@
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
+import { SupersetService } from '../core/data/SupersetService-data.service';
+import { isPlatformBrowser } from '@angular/common';
+import { OnInit, Injectable, Output, EventEmitter, Input } from '@angular/core';
+import { NgbDate, NgbCalendar, NgbDateParserFormatter, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+
+import { RemoteData } from '../core/data/remote-data';
+import { SortDirection, SortOptions } from '../core/cache/models/sort-options.model';
+import { combineLatest as observableCombineLatest, Subscription } from 'rxjs';
+import { hasValue } from '../shared/empty.util';
+import { AuthService } from '../core/auth/auth.service';
+import { switchMap, take, map } from 'rxjs/operators';
+import { PageInfo } from '../core/shared/page-info.model';
+import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { buildPaginatedList, PaginatedList } from '../core/data/paginated-list.model';
+import { Collection } from '../core/shared/collection.model';
+import { Item } from '../core/shared/item.model';
+import { fadeIn, fadeInOut } from '../shared/animations/fade';
+import { ItemDataService } from '../core/data/item-data.service';
+import { DmseventSerive } from '../core/data/dmsevent.service';
+import { NotificationsService } from '../shared/notifications/notifications.service';
+import { PaginationComponentOptions } from '../shared/pagination/pagination-component-options.model';
+import { URLCombiner } from '../core/url-combiner/url-combiner';
+
+import {
+  getAllSucceededRemoteDataPayload,
+  getFirstCompletedRemoteData,
+  getFirstSucceededRemoteData,
+  getFirstSucceededRemoteDataPayload,
+  getRemoteDataPayload,
+  getAllSucceededRemoteData
+} from '../core/shared/operators';
+import { CollectionDataService } from '../core/data/collection-data.service';
+import { PaginationService } from '../core/pagination/pagination.service';
+import { EPersonDataService } from '../core/eperson/eperson-data.service';
+import { FormBuilder } from '@angular/forms';
+import { EPerson } from '../core/eperson/models/eperson.model';
+import { FindListOptions } from '../core/data/find-list-options.model';
+import { DSONameService } from '../core/breadcrumbs/dso-name.service';
+
+@Injectable()
+export class CustomDateParserFormatter extends NgbDateParserFormatter {
+
+  readonly DELIMITER = '/';
+
+
+  parse(value: string): NgbDateStruct | null {
+    if (value) {
+      const date = value.split(this.DELIMITER);
+      return {
+        day: parseInt(date[0], 10),
+        month: parseInt(date[1], 10),
+        year: parseInt(date[2], 10)
+      };
+    }
+    return null;
+  }
+
+  format(date: NgbDateStruct | null): string {
+    if (date != null) {
+      const month = date.month <= 9 ? "0" + date.month : date.month;
+      const day = date.day <= 9 ? "0" + date.day : date.day;
+      return date ? day + this.DELIMITER + month + this.DELIMITER + date.year : '';
+    }
+
+
+  }
+}
+@Component({
+  selector: 'ds-productivity-report',
+  templateUrl: './productivity-report.component.html',
+  styleUrls: ['./productivity-report.component.scss'],
+  animations: [
+    fadeIn,
+    fadeInOut
+  ],
+  providers: [
+
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter }
+  ]
+})
+export class ProductivityReportComponent implements OnInit, AfterViewInit {
+  @ViewChild("dashboard") private dashboardElement: ElementRef;
+
+  hoveredDate: NgbDate | null = null;
+  items$: BehaviorSubject<PaginatedList<Item>> = new BehaviorSubject(buildPaginatedList<Item>(new PageInfo(), []));
+  collections: BehaviorSubject<Collection[]> = new BehaviorSubject<Collection[]>([]);
+  pageInfoState$: BehaviorSubject<PageInfo> = new BehaviorSubject<PageInfo>(undefined);
+  config: PaginationComponentOptions;
+  sortConfig: SortOptions;
+  searching$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  currentSearchQuery: string;
+  currentSearchScope: string;
+  // The search form
+  showdocument: Boolean = false;
+  /**
+   * The pagination id
+   */
+  items: any = [];
+  finduser: any;
+  pageId = 'tl';
+
+  currentPageSubscription: Subscription;
+  fromDate: NgbDate | null;
+  toDate: NgbDate | null;
+  maxDate: NgbDate | null;
+  loder: boolean = false;
+  
+
+  @Output() pageChange: EventEmitter<number> = new EventEmitter<number>();
+  @Output() paginationChange: EventEmitter<number> = new EventEmitter<number>();
+  treename: string = "";
+  actiontype: string = "";
+  public states: Array<EPerson> = [];
+  @Output() pageSizeChange: EventEmitter<number> = new EventEmitter<number>();
+  selectedCollectionId: string = '';
+
+  constructor(private calendar: NgbCalendar, public formatter: NgbDateParserFormatter,
+    private itemDataService: ItemDataService,
+    private paginationService: PaginationService,
+    private authService: AuthService, private elementRef: ElementRef,
+    private cdRef: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: any,
+    private embedService: SupersetService,
+    private collectionDataService: CollectionDataService,
+    public dsoNameService: DSONameService,
+  ) {
+    this.config = new PaginationComponentOptions();
+    this.config.id = this.pageId;
+    this.config.pageSize = 20;
+    this.config.currentPage = 1;
+    this.sortConfig = new SortOptions('dc.title', SortDirection.ASC);
+    this.fromDate = calendar.getPrev(calendar.getToday(), 'd', 30);
+    this.toDate = calendar.getToday();
+    this.maxDate = this.toDate;
+  }
+
+
+  onDateSelection(date: NgbDate, datepicker: any) {
+    if (!this.fromDate && !this.toDate) {
+      this.fromDate = date;
+    } else if (this.fromDate && !this.toDate && date && date.after(this.fromDate)) {
+      this.toDate = date;
+      datepicker.close()
+    } else {
+      this.toDate = null;
+      this.fromDate = date;
+    }
+  }
+  openNewTab(item) {
+    let url;
+    let itemid;
+    switch (item.entityType) {
+      case 'Publication':
+        url = window.location.origin + '/entities/publication/';
+        itemid = item.id;
+        window.open(url + itemid, '_blank');
+        break;
+      case 'OrgUnit':
+        url = window.location.origin + '/entities/orgunit/';
+        itemid = item.id;
+        window.open(url + itemid, '_blank');
+        break;
+      default:
+        url = window.location.origin + '/entities/person/';
+        itemid = item.id;
+        window.open(url + itemid, '_blank');
+    }
+  }
+  isHovered(date: NgbDate) {
+    return (
+      this.fromDate && !this.toDate && this.hoveredDate && date.after(this.fromDate) && date.before(this.hoveredDate)
+    );
+  }
+
+  isInside(date: NgbDate) {
+    return this.toDate && date.after(this.fromDate) && date.before(this.toDate);
+  }
+
+  isRange(date: NgbDate) {
+    return (
+      date.equals(this.fromDate) ||
+      (this.toDate && date.equals(this.toDate)) ||
+      this.isInside(date) ||
+      this.isHovered(date)
+    );
+  }
+
+  downloadEXsl(): void {
+    this.itemDataService.getexcleEndpoint().pipe().subscribe((results) => {
+      let frommonth = this.fromDate.month <= 9 ? "0" + this.fromDate.month : this.fromDate.month;
+      let fromday = this.fromDate.day <= 9 ? "0" + this.fromDate.day : this.fromDate.day;
+      let tomonth = this.toDate.month <= 9 ? "0" + this.toDate.month : this.toDate.month;
+      let today = this.toDate.day <= 9 ? "0" + this.toDate.day : this.toDate.day;
+      let startdate: string = this.fromDate.year + "-" + frommonth + "-" + fromday;
+      let enddate: string = this.toDate.year + "-" + tomonth + "-" + today;
+      this.authService.getShortlivedToken().pipe(take(1), map((token) =>
+        hasValue(token) 
+          ? new URLCombiner(results + "/report/downloadItemReport?startdate=" + startdate + "&enddate=" + enddate + "&collection=" + this.selectedCollectionId, `?authentication-token=${token}`).toString() 
+          : results + "/report/downloadItemReport?startdate=" + startdate + "&enddate=" + enddate + "&collection=" + this.selectedCollectionId)).subscribe((logs: string) => {
+          window.open(logs);
+        });
+      //window.open(results + "/report/downloadItemReport?startdate=" + startdate + "&enddate=" + enddate)
+    })
+    // console.log(this.itemDataService.getexcleEndpoint());
+
+    //  window.open('http://localhost:8080/server/api/core/items/report/downloadItemReport?startdate=2022-12-15&enddate=2023-02-01')
+  }
+
+
+  validateInput(currentValue: NgbDate | null, input: string): NgbDate | null {
+    const parsed = this.formatter.parse(input);
+    return parsed && this.calendar.isValid(NgbDate.from(parsed)) ? NgbDate.from(parsed) : currentValue;
+  }
+  ngOnInit(): void {
+    this.getCollectionList();
+  }
+
+  getresult(): void {
+    this.loder = true;
+    if (hasValue(this.currentPageSubscription)) {
+      this.currentPageSubscription.unsubscribe();
+      this.paginationService.resetPage(this.config.id);
+    }
+
+    const pagination$ = this.paginationService.getCurrentPagination(this.config.id, this.config);
+    const sort$ = this.paginationService.getCurrentSort(this.config.id, this.sortConfig);
+    let frommonth = this.fromDate.month <= 9 ? "0" + this.fromDate.month : this.fromDate.month;
+    let fromday = this.fromDate.day <= 9 ? "0" + this.fromDate.day : this.fromDate.day;
+    let tomonth = this.toDate.month <= 9 ? "0" + this.toDate.month : this.toDate.month;
+    let today = this.toDate.day <= 9 ? "0" + this.toDate.day : this.toDate.day;
+    let startdate: string = this.fromDate.year + "-" + frommonth + "-" + fromday;
+    let enddate: string = this.toDate.year + "-" + tomonth + "-" + today;
+
+    this.currentPageSubscription = observableCombineLatest([pagination$, sort$]).pipe(
+      switchMap(([currentPagination, currentSort]) => {
+        return this.itemDataService._getprogressReportByDate(startdate, enddate, this.selectedCollectionId , {
+          currentPage: currentPagination.currentPage,
+          elementsPerPage: currentPagination.pageSize,
+        });
+      }),
+      getAllSucceededRemoteData(),
+    ).subscribe((results) => {
+      this.loder = false;
+      this.items$.next(results.payload);
+      this.pageInfoState$.next(results.payload.pageInfo);
+    });
+  }
+
+  getCollectionList(): void {
+    this.collectionDataService.getAuthorizedCollection('', {
+      currentPage: 1,
+      elementsPerPage: 100
+    }, false, false).pipe(
+      getFirstSucceededRemoteDataPayload(),
+      map((collections: PaginatedList<Collection>) => collections.page)
+    ).subscribe((collections: Collection[]) => {
+      this.collections.next(collections);
+    });
+  }
+
+  onPageChange(event) {
+    this.loder = true;
+    this.pageChange.emit(event);
+  }
+  onPaginationChange(event) {
+    this.paginationChange.emit(event);
+  }
+
+  /**
+   * Emits the current page size when it changes
+   * @param event The new page size
+   */
+  onPageSizeChange(event) {
+    this.pageSizeChange.emit(event);
+  }
+
+  embedSupersetDashboard(): void {
+    // debugger;
+    //const dashboardElement = this.elementRef.nativeElement.querySelector('#dashboard');
+
+    if (this.dashboardElement) {
+      this.embedService.embedDashboard(document.getElementById('dashboard'), 'f2dc430d-0170-466f-9a7c-ad6e6e5f2c7c').subscribe(
+        () => {
+          // debugger;
+          // Adjust the size of the embedded iframe
+          const iframe = this.dashboardElement.nativeElement.querySelector('iframe');
+          if (iframe) {
+            iframe.style.width = '100%'; // Set the width as needed
+            iframe.style.height = '600px';
+            iframe.classList.add = 'iframe-container';// Set the height as needed
+
+          }
+          this.cdRef.detectChanges();
+        },
+        (error) => {
+          console.error(error);
+        }
+
+      );
+    }
+  }
+
+  ngAfterViewInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      //  this.embedSupersetDashboard();
+    }
+  }
+
+  getDisplayTitle(item: any): string {
+    let entityType = item.firstMetadataValue('dspace.entity.type');
+    if (entityType === 'Publication') {
+      return item.firstMetadataValue('dc.title') || '';
+    } else if (entityType === 'OrgUnit') {
+      return item.firstMetadataValue('organization.legalName') || '';
+    } else {
+      const title1 = item.firstMetadataValue('person.prefix') || '';
+      const title2 = item.firstMetadataValue('person.familyName') || '';
+      const title3 = item.firstMetadataValue('person.givenName') || '';
+
+      if (title1 && title2 && title3) {
+        return `${title1} ${title2}, ${title3}`;
+      } else if (title1 && title2) {
+        return `${title1} ${title2}`;
+      } else if (title1) {
+        return title1;
+      } else if (title2 && title3) {
+        return `${title2}, ${title3}`;
+      } else {
+        return title2 || title3 || '';
+      }
+    }
+  }
+
+  selectedaction(event) {
+    this.selectedCollectionId = event.target.value;
+  }
+
+}

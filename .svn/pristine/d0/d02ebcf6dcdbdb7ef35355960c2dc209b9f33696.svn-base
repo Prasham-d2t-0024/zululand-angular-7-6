@@ -1,0 +1,78 @@
+import { AfterViewInit, Component, Input } from '@angular/core';
+import { ViewMode } from '../../../../core/shared/view-mode.model';
+import { listableObjectComponent } from '../../../../shared/object-collection/shared/listable-object/listable-object.decorator';
+import { ItemComponent } from '../../../../item-page/simple/item-types/shared/item.component';
+import { FindListOptions } from 'src/app/core/data/find-list-options.model';
+import { getFirstCompletedRemoteData, getFirstSucceededRemoteData } from 'src/app/core/shared/operators';
+import { RemoteData } from 'src/app/core/data/remote-data';
+import { SearchFilterConfig } from 'src/app/shared/search/models/search-filter-config.model';
+import { PaginatedSearchOptions } from 'src/app/shared/search/models/paginated-search-options.model';
+
+@listableObjectComponent('Person', ViewMode.StandalonePage)
+@Component({
+  selector: 'ds-person',
+  styleUrls: ['./person.component.scss'],
+  templateUrl: './person.component.html'
+})
+/**
+ * The component for displaying metadata and relations of an item of the type Person
+ */
+export class PersonComponent extends ItemComponent implements AfterViewInit {
+  @Input() isBlank: Boolean = true;
+  act = [];
+  filterpolice: SearchFilterConfig;
+  departmentList = [];
+  thestype = [];
+  options = new FindListOptions();
+  ngAfterViewInit() {
+    this.searchConfigurationService.getConfig("", undefined).pipe(
+      getFirstCompletedRemoteData(),
+    ).subscribe((filtersRD: RemoteData<SearchFilterConfig[]>) => {
+      console.log(filtersRD.payload)
+      this.filterpolice = filtersRD.payload.find(x => x.name === 'itemtype');
+      this.filterpolice.pageSize = 1000;
+
+      this.searchService.getFacetValuesFor(this.filterpolice, 1, new PaginatedSearchOptions({
+        fixedFilter: 'f.isAuthorOfPublication=' + this.object.id + ",equals", configuration:'default-relationships' })).pipe(getFirstSucceededRemoteData()).subscribe((rd: any) => {
+        this.thestype= rd.payload.page;
+      })
+    })
+   // this.getAct();
+    this.getDepartment();
+  }
+
+  getDepartment() {
+    ///// Department
+    this.relationshipService.getRelatedItemsByLabel(this.object, 'isOrgUnitOfPerson', Object.assign(this.options, {
+      elementsPerPage: 500, currentPage: 1
+    })).subscribe((rd) => {
+      this.departmentList = [];
+     // console.log("rd.............", rd)
+      for (let case1 of rd.payload.page) {
+
+        this.departmentList.push(case1);
+        // console.log("this.act............",this.act)
+      }
+
+      this.cdRef.detectChanges();
+    });
+  }
+  getAct() {
+    debugger;
+    this.relationshipService.getRelatedItemsByLabel(this.object, 'isPublicationOfAuthor', Object.assign(this.options, {
+      elementsPerPage: 500, currentPage: 1
+    })).subscribe((rd) => {
+      this.act = [];
+     // console.log("rd.............",rd)
+      for (let case1 of rd.payload.page) {
+
+        this.act.push(case1);
+       // console.log("this.act............",this.act)
+      }
+
+      this.cdRef.detectChanges();
+    });
+
+    
+  }
+}

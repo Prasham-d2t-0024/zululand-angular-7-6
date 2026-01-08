@@ -1,0 +1,10 @@
+<ds-pagination *ngIf="(pageInfoState$ | async)?.totalElements > 0"
+    [paginationOptions]="config"
+    [pageInfoState]="pageInfoState$"
+    [collectionSize]="(pageInfoState$ | async)?.totalElements"
+    [hideGear]="true" [hidePagerWhenSinglePage]="true">
+    <div class="recent-item-list mb-4" *ngFor="let item of (bookMarks | async)?.page">
+        <ds-listable-object-component-loader [object]="item" [viewMode]="viewMode" class="pb-4">
+        </ds-listable-object-component-loader>
+    </div>
+</ds-pagination>

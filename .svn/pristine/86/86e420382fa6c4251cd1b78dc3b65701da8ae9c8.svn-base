@@ -1,0 +1,53 @@
+:host {
+  ::ng-deep {
+    em {
+      border-bottom: 3px solid rgb(210, 199, 77);
+    }
+
+    .browse-by-metadata {
+      ul.list-unstyled {
+        display: flex;
+
+        li {
+          flex-basis: calc(100%/3);
+
+          @media screen and (max-width: 767px) {
+            flex-basis: 100%;
+          }
+        }
+      }
+    }
+
+  }
+}
+
+ds-selectable-list-item-control {
+  z-index: 1
+}
+
+.scroll-container {
+  height: calc(500px - 105px);
+  margin: 0 0 15px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 5px 0;
+
+  @media screen and (max-width: map-get($grid-breakpoints, sm)) {
+    height: 500px;
+  }
+
+  li {
+    &:first-child {
+      margin-top: 0 !important;
+    }
+
+    &:last-child {
+      margin-bottom: 0 !important;
+
+      .pagination {
+        margin: 0;
+        ;
+      }
+    }
+  }
+}

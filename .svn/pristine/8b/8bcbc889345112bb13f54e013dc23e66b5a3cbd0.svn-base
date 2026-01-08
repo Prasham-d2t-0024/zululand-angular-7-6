@@ -1,0 +1,119 @@
+<div class="container mt-4 tabViewContainer community-container" *ngVar="(communityRD$ | async) as communityRD">
+  <div class="row">
+    <div class="col-lg-12">
+      <ul ngbNav #nav="ngbNav" class="nav-tabs" style="margin-bottom: 0px!important;">
+        <li ngbNavItem>
+          <a ngbNavLink class="h5">
+            <i class="fas fa-inbox mr-2 fa-lg"></i>
+            <span>{{'home.browse.repository' | translate}}</span>
+          </a>
+          <ng-template ngbNavContent>
+            <div class="bg-white">
+              <div class="container tabViewContents communityTabContent" *ngIf="communityRD?.hasSucceeded" @fadeInOut>
+                <div *ngIf="communityRD?.payload; let communityPayload">
+                  <ds-view-tracker [object]="communityPayload"></ds-view-tracker>
+                  <section class="row border-bottom mb-4">
+                    <div class="col-12 col-sm-3">
+                      <!-- Community logo -->
+                      <ds-comcol-page-logo *ngIf="logoRD$" [logo]="(logoRD$ | async)?.payload" [alternateText]="'Community Logo'">
+                                </ds-comcol-page-logo>
+                    </div>
+                    <div class="col-12 d-flex col-sm-9 pl-md-0">
+                      <header class="comcol-header mr-auto">
+                        <!-- Community name -->
+                        <ds-comcol-page-header
+                          [name]="dsoNameService.getName(communityPayload)"></ds-comcol-page-header>
+
+                        <!-- Handle -->
+                        <ds-themed-comcol-page-handle [content]="communityPayload.handle"
+                          [title]="'community.page.handle'">
+                        </ds-themed-comcol-page-handle>
+                        <!-- Introductory text -->
+                        <ds-comcol-page-content [content]="communityPayload.introductoryText" [hasInnerHtml]="true">
+                        </ds-comcol-page-content>
+                        <!-- News -->
+                        <ds-comcol-page-content [content]="communityPayload.sidebarText" [hasInnerHtml]="true"
+                          [title]="'community.page.news'">
+                        </ds-comcol-page-content>
+                      </header>
+                      <ds-dso-edit-menu></ds-dso-edit-menu>
+                      <div class="pl-2 space-children-mr">
+                        <ds-dso-page-subscription-button [dso]="communityPayload"></ds-dso-page-subscription-button>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+            <div class="bg-grey">
+              <div class="container tabViewContents communityTabContent" *ngIf="communityRD?.hasSucceeded && communityRD?.payload; let communityPayload" @fadeInOut>
+                  <section class="comcol-page-browse-section">
+                    <!-- Browse-By Links -->
+                    <ds-themed-comcol-page-browse-by [id]="communityPayload.id" [contentType]="communityPayload.type">
+                    </ds-themed-comcol-page-browse-by>
+                    <ds-configuration-search-page [showScopeSelector]="false"></ds-configuration-search-page>
+                  </section>
+                  <footer *ngIf="communityPayload.copyrightText" class="border-top my-5 pt-4">
+                    <!-- Copyright -->
+                    <ds-comcol-page-content [content]="communityPayload.copyrightText" [hasInnerHtml]="true">
+                    </ds-comcol-page-content>
+                  </footer>
+                </div>
+              <ds-error *ngIf="communityRD?.hasFailed" message="{{'error.community' | translate}}"></ds-error>
+              <ds-themed-loading *ngIf="communityRD?.isLoading"
+                message="{{'loading.community' | translate}}"></ds-themed-loading>
+              </div>
+          </ng-template>
+        </li>
+        <li ngbNavItem>
+          <a ngbNavLink class="h5"><i class="fas fa-chart-line mr-2 fa-lg"></i>{{'home.whats.trending' | translate}}</a>
+          <ng-template ngbNavContent>
+
+            <div class="chart-tabs" style="margin-top: 10px;">
+              <ul ngbNav #nav="ngbNav" class="nav-tabs" style="margin-bottom: 0px!important;">
+                <li ngbNavItem>
+                  <a ngbNavLink><i class="fas fa-chart-line mr-2"></i>Trending Items</a>
+                  <ng-template ngbNavContent>
+                    <ng-container *ngIf="communityId$ | async as communityId">
+                      <ds-home-trending-item [collectionorCommunityId]="communityId" type="community"></ds-home-trending-item>
+                    </ng-container>
+                  </ng-template>
+                </li>
+                <li ngbNavItem>
+                  <a ngbNavLink><i class="fas fa-chart-pie mr-2"></i>Trending Metrics</a>
+                  <ng-template ngbNavContent>
+                    <div class="trending-metrics">
+                      <div class="row align-items-center"  style="margin-left: 0px;margin-right: 0px;">
+                        <ng-container *ngIf="communityId$ | async as communityId">
+                          <ds-home-treding-geolocation [collectionorCommunityId]="communityId" type="community"></ds-home-treding-geolocation>
+                        </ng-container>
+                      </div>
+                      <hr>
+                      <div class="column-chart">
+                        <ng-container *ngIf="communityId$ | async as communityId">
+                          <ds-home-treding-types [collectionorCommunityId]="communityId" type="community"></ds-home-treding-types>
+                        </ng-container>
+                      </div>
+                      <hr>
+                      <div class="column-chart">
+                        <ng-container *ngIf="communityId$ | async as communityId">
+                          <ds-home-trending-collecction [collectionorCommunityId]="communityId" type="community"></ds-home-trending-collecction>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </ng-template>
+                </li>
+              </ul>
+              <div [ngbNavOutlet]="nav" class="bg-white"></div>
+            </div>
+  
+          </ng-template>
+        </li>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </div>
+  </div>
+
+
+
+</div>

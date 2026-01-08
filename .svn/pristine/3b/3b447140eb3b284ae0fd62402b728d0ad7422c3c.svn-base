@@ -1,0 +1,193 @@
+<ng-container *ngVar="(parent$ | async) as parent">
+  <ng-container *ngIf="!parent?.payload as parentContext">
+<div class="container">
+    <ng-container *ngVar="(parent$ | async) as parent">
+    <ng-container *ngIf="parent?.payload as parentContext">
+        <div class="d-flex flex-row border-bottom mb-4 pb-4">
+
+            <header class="comcol-header mr-auto">
+       
+        <ds-comcol-page-header [name]="dsoNameService.getName(parentContext)">
+        </ds-comcol-page-header>
+    
+        <ds-comcol-page-logo *ngIf="logo$"
+                             [logo]="(logo$ | async)?.payload"
+                             [alternateText]="'Community or Collection Logo'">
+        </ds-comcol-page-logo>
+       
+        <ds-themed-comcol-page-handle
+            [content]="parentContext.handle"
+            [title]="parentContext.type+'.page.handle'" >
+        </ds-themed-comcol-page-handle>
+       
+        <ds-comcol-page-content [content]="parentContext.introductoryText" [hasInnerHtml]="true">
+        </ds-comcol-page-content>
+       
+        <ds-comcol-page-content [content]="parentContext.sidebarText" [hasInnerHtml]="true" [title]="'community.page.news'">
+        </ds-comcol-page-content>
+      </header>
+        <ds-dso-edit-menu></ds-dso-edit-menu>
+        </div>
+      
+      <ds-themed-comcol-page-browse-by [id]="parentContext.id" [contentType]="parentContext.type"></ds-themed-comcol-page-browse-by>
+      </ng-container></ng-container>
+
+    <section class="comcol-page-browse-section">
+    <div class=" p-3 mt-4 w-100 browse-by-metadata ">
+    <ds-browse-by *ngIf="startsWithOptions" class="col-xs-12 w-100"
+      title="{{'browse.title' | translate:
+      {
+        collection: dsoNameService.getName((parent$ | async)?.payload),
+        field: 'browse.metadata.' + browseId | translate,
+        startsWith: (startsWith)? ('browse.startsWith' | translate: { startsWith: '&quot;' + startsWith + '&quot;' }) : '',
+        value: (value)? '&quot;' + value + '&quot;': ''
+      } }}"
+      parentname="{{dsoNameService.getName((parent$ | async)?.payload)}}"
+      [objects$]="(items$ !== undefined)? items$ : browseEntries$"
+      [paginationConfig]="(currentPagination$ |async)"
+      [sortConfig]="(currentSort$ |async)"
+      [type]="startsWithType"
+      [startsWithOptions]="startsWithOptions"
+      (prev)="goPrev()"
+      (next)="goNext()"
+      [browseID]="browseId"
+      [value]="value">
+    </ds-browse-by>
+    <ds-themed-loading *ngIf="!startsWithOptions" message="{{'loading.browse-by-page' | translate}}"></ds-themed-loading>
+  </div>
+  </section>
+  <ng-container *ngVar="(parent$ | async) as parent">
+    <ng-container *ngIf="parent?.payload as parentContext">
+  <footer *ngIf="parentContext.copyrightText" class="border-top my-5 pt-4">
+    <div >
+
+     
+      <ds-comcol-page-content [content]="parentContext.copyrightText" [hasInnerHtml]="true">
+      </ds-comcol-page-content>
+    </div>
+  </footer>
+</ng-container>
+</ng-container>
+</div> 
+</ng-container>
+</ng-container>
+
+
+
+<ng-container *ngVar="(parent$ | async) as parent">
+  <ng-container *ngIf="parent?.payload as parentContext">
+<div class="container mt-4 tabViewContainer browseByMetadata-container">
+  <div class="row">
+    <div class="col-lg-12">
+      <ul ngbNav #nav="ngbNav" class="nav-tabs"  style="margin-bottom: 0px!important;">
+        <li ngbNavItem>
+          <a ngbNavLink class="h6">
+            <i class="fas fa-inbox mr-2 fa-lg"></i>
+            <span>{{'home.browse.repository' | translate}}</span>
+          </a>
+          <ng-template ngbNavContent>
+            <div class="container bg-white tabViewContents browseByMetadataTabContent">
+              <ng-container *ngVar="(parent$ | async) as parent">
+                <ng-container *ngIf="parent?.payload as parentContext">
+                  <section class="row border-bottom mb-4">
+                    <div class="col-12 col-sm-3">
+                      <!-- Community logo -->
+                      <ds-comcol-page-logo
+                        *ngIf="logo$"
+                        [logo]="(logo$ | async)?.payload"
+                        [alternateText]="'Community or Collection Logo'"
+                      >
+                      </ds-comcol-page-logo>
+                    </div>
+                    <div class="col-12 col-sm-9">
+                      <header class="comcol-header mr-auto">
+                        <ds-comcol-page-header
+                          [name]="dsoNameService.getName(parentContext)"
+                        >
+                        </ds-comcol-page-header>
+
+                        <ds-themed-comcol-page-handle
+                          [content]="parentContext.handle"
+                          [title]="parentContext.type+'.page.handle'"
+                        >
+                        </ds-themed-comcol-page-handle>
+
+                        <ds-comcol-page-content
+                          [content]="parentContext.introductoryText"
+                          [hasInnerHtml]="true"
+                        >
+                        </ds-comcol-page-content>
+
+                        <ds-comcol-page-content
+                          [content]="parentContext.sidebarText"
+                          [hasInnerHtml]="true"
+                          [title]="'community.page.news'"
+                        >
+                        </ds-comcol-page-content>
+                      </header>
+                      <ds-dso-edit-menu></ds-dso-edit-menu>
+                    </div>
+                  </section>
+                  <section class="comcol-page-browse-section">
+                    <ds-themed-comcol-page-browse-by
+                      [id]="parentContext.id"
+                      [contentType]="parentContext.type"
+                    ></ds-themed-comcol-page-browse-by>
+                    <div class="mt-4 w-100 browse-by-metadata">
+                      <ds-browse-by
+                        *ngIf="startsWithOptions"
+                        class="col-xs-12 w-100"
+                        title="{{'browse.title' | translate:
+                          {
+                            collection: dsoNameService.getName((parent$ | async)?.payload),
+                            field: 'browse.metadata.' + browseId | translate,
+                            startsWith: (startsWith)? ('browse.startsWith' | translate: { startsWith: '&quot;' + startsWith + '&quot;' }) : '',
+                            value: (value)? '&quot;' + value + '&quot;': ''
+                          } }}"
+                        parentname="{{dsoNameService.getName((parent$ | async)?.payload)}}"
+                        [objects$]="(items$ !== undefined)? items$ : browseEntries$"
+                        [paginationConfig]="(currentPagination$ |async)"
+                        [sortConfig]="(currentSort$ |async)"
+                        [type]="startsWithType"
+                        [startsWithOptions]="startsWithOptions"
+                        [browseID]="browseId"
+      [value]="value"
+                        (prev)="goPrev()"
+                        (next)="goNext()"
+                      >
+                      </ds-browse-by>
+                      <ds-themed-loading
+                        *ngIf="!startsWithOptions"
+                        message="{{'loading.browse-by-page' | translate}}"
+                      ></ds-themed-loading>
+                    </div>
+                  </section>
+                  <footer *ngIf="parentContext.copyrightText" class="border-top my-5 pt-4">
+                    <div>
+                      <ds-comcol-page-content
+                        [content]="parentContext.copyrightText"
+                        [hasInnerHtml]="true"
+                      >
+                      </ds-comcol-page-content>
+                    </div>
+                  </footer> </ng-container
+              ></ng-container>
+            </div>
+          </ng-template>
+        </li>
+        <!-- <li ngbNavItem>
+          <a ngbNavLink class="h6"
+            ><i class="fas fa-chart-line mr-2 fa-lg"></i>{{'home.whats.trending'
+            | translate}}</a
+          >
+          <ng-template ngbNavContent> </ng-template>
+        </li> -->
+      </ul>
+      <div [ngbNavOutlet]="nav" class="browse-tab-content"></div>
+    </div>
+  </div>
+</div>
+
+
+</ng-container>
+</ng-container>

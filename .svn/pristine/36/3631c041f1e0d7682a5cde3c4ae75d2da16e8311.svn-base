@@ -1,0 +1,1 @@
+<h4 class="comcolTitle" *ngIf="name">{{ name }}</h4>

@@ -1,0 +1,12 @@
+textarea.form-control {
+    height: 150px!important;
+    width: 100%;
+}
+
+.added {
+    margin-top: 100px;
+}
+
+.btn {
+    cursor: pointer;
+}

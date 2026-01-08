@@ -1,0 +1,83 @@
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ViewMode } from '../../../../core/shared/view-mode.model';
+import { listableObjectComponent } from '../../../../shared/object-collection/shared/listable-object/listable-object.decorator';
+import { ItemComponent } from '../shared/item.component';
+import { FindListOptions } from 'src/app/core/data/find-list-options.model';
+
+/**
+ * Component that represents a publication Item page
+ */
+
+@listableObjectComponent('Publication', ViewMode.StandalonePage)
+@Component({
+  selector: 'ds-publication',
+  styleUrls: ['./publication.component.scss'],
+  templateUrl: './publication.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class PublicationComponent extends ItemComponent implements AfterViewInit {
+  @Input() isBlank: Boolean = true;
+    lineChartdata:any;
+  type:string;
+  isLoading: false;
+  colorScheme = {
+    domain:['#003D6E','#0061AF']
+  };
+  showXAxis: boolean = true;
+  showYAxis: boolean = true;
+  gradient: boolean = false;
+  showLegend: boolean = true;
+  showLegendLabel: boolean = true;
+  legendPosition: string = 'below';
+  showXAxisLabel: boolean = false;
+  yAxisLabel: string = 'Country';
+  xAxisLabel: string = 'Counts';
+  showYAxisLabel: boolean = false;
+  timeline: boolean = true;
+  xAxis: boolean = true;
+  yAxis: boolean = true;
+  legend: boolean = true;
+  departmentList = [];
+  options = new FindListOptions();
+  authors:any[] = [];
+  ngAfterViewInit() {
+   
+    this.getauthor();
+
+  }
+  getauthor() {
+    this.relationshipService.getRelatedItemsByLabel(this.object, 'isAuthorOfPublication', Object.assign(this.options, {
+      elementsPerPage: 500, currentPage: 1
+    })).subscribe((rd) => {
+      this.departmentList = [];
+      for (let case1 of rd.payload.page) {
+        this.departmentList.push(case1);
+      }
+      let tempAuthors = this.object.allMetadataValues('dc.contributor.author');
+      tempAuthors.forEach(author => {
+        this.departmentList.forEach((department)=>{
+          let fullName = `${department.metadata['person.familyName'][0].value},${department.metadata['person.givenName'][0].value}`;
+          if(fullName.trim() != author.replace(/,\s+/g, ",").trim()){
+            this.authors.push(author);
+          }
+        })
+      });
+      this.cdRef.detectChanges();
+    });
+  }
+
+  getAdvisorValue(metadataValue:any){
+    if(metadataValue){
+      return metadataValue;
+    }
+  }
+
+   getAdvisorlink(link: string) {
+    let extractedLink = link;  
+    if (link.includes("[")) {
+      extractedLink = link.split("[")[1].split("]")[0];
+    }
+    return this.sanitizer.bypassSecurityTrustResourceUrl(extractedLink);
+  }
+
+}

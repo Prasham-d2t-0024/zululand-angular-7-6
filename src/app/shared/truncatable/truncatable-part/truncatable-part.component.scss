@@ -1,0 +1,15 @@
+.content:not(.truncated) ~ button.expandButton {
+  display: none;
+}
+
+.btn:focus {
+  box-shadow: none !important;
+}
+
+.removeFaded.content::after {
+  display: none;
+}
+
+.clamp-default-3 .content {
+  max-height: 4.0rem!important;
+}

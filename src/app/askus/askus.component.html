@@ -1,0 +1,49 @@
+<div class="container askus-container">
+    <div class="row">
+        <div class="col-12 col-md-12">
+            <div class="mt-4 centered-content">
+                <h4 class="text-primary mb-4"><b>{{'askus.breadcrumbs' | translate}}</b></h4>
+                <div *ngFor="let item of askus">
+                    <h6 class="mt-5"><b>{{item.question}}</b></h6>
+                    <div><div [innerHTML]="getSanitizedHtml(item.answers)"></div></div>
+                    <!-- <p>{{item.answers}}</p> -->
+                </div>
+            </div>
+        </div>
+        <!-- <div class="col-12 col-md-5 mt-4 h-50 text-center">
+            <div class="col-12 p-0">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="m-0">Contact the Repository team</h5>
+                    </div>
+                    <div class="card-body p-0 scroll-container theme-scrollBar">
+                        <table class="m-0 table">
+                            <tbody>
+                                <ng-container *ngFor="let community of (communitiesRD$ | async)?.page">
+                                    <tr *ngIf="community.firstMetadataValue('dc.relation.uri')">
+                                        <td class="text-left ellipsify-vertical line-2">{{dsoNameService.getName(community)}}</td>
+                                        <td class="text-right td-actionIcons">
+                                            <a target="_self" class="text-primary" href="mailto:{{community.firstMetadataValue('dc.relation.uri')}}">
+                                                <i aria-hidden="true" class="far fa-lg fa-envelope "></i> 
+                                                <span class="ml-1">Email</span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>                   
+            </div>            
+            <div class="col-12 mt-3 p-0">
+                <div class="bg-white">
+                    <h6 class="m-0 p-3 text-primary card-header"><b>Ask online</b></h6>
+                    <p class="m-0 p-3">The Repository administrator will respond to your query anytime.</p>
+                    <div class="d-flex align-items-center justify-content-center p-2 box-centered-content bg-primary">
+                        <a class="btn btn-success p-2 text-break" routerLink="/contactus">Submit an enquiry </a>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+    </div>
+</div>

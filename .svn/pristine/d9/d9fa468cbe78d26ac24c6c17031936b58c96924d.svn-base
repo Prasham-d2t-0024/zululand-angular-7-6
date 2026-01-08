@@ -1,0 +1,34 @@
+<div class="col-lg-12 mt-3">
+  <ul ngbNav #nav="ngbNav" [destroyOnHide]="false" (navChange)="onNavChange($event)" class="flex-nowrap nav-tabs"
+    [(activeId)]="active">
+    <li [ngbNavItem]="1">
+      <a ngbNavLink class="h6"><i class="fas fa-inbox mr-2 fa-lg"></i>Submissions</a>
+      <ng-template ngbNavContent>
+
+        <div class="container">
+          <ds-my-dspace-new-submission *dsShowOnlyForRole="[roleTypeEnum.Submitter]"></ds-my-dspace-new-submission>
+        </div>
+
+        <ds-themed-search *ngIf="configuration && context" [configuration]="configuration"
+          [configurationList]="(configurationList$ | async)" [context]="context"
+          [viewModeList]="viewModeList"></ds-themed-search>
+      </ng-template>
+    </li>
+
+    <li [ngbNavItem]="2">
+      <a ngbNavLink class="h6"><i class="fas fa-bookmark mr-2 fa-lg"></i>My Bookmark</a>
+      <ng-template ngbNavContent>
+        <div class="tab-listCard card">
+          <div class="card-header bg-primary text-white">
+            Your Bookmarks
+          </div>
+          <div class="card-body overflow-hidden" style="background-color: #f2f2f2;">
+            <ds-bookmark></ds-bookmark>
+          </div>
+        </div>
+
+      </ng-template>
+    </li>
+  </ul>
+  <div [ngbNavOutlet]="nav"></div>
+</div>

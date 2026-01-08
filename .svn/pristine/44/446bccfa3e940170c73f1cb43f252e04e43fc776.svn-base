@@ -1,0 +1,43 @@
+.nav-breadcrumb {
+  background-color: var(--ds-breadcrumb-bg);
+  padding: 0 15px;
+  @media screen and (max-width: map-get($grid-breakpoints, md)-0.02) {
+    padding: 0;
+  }
+}
+.breadcrumb {
+  background-color: var(--ds-breadcrumb-bg);
+  height: 40px;
+  padding: 0;
+}
+
+li.breadcrumb-item {
+  display: flex;
+}
+
+.breadcrumb-item-limiter {
+  display: inline-block;
+  max-width: var(--ds-breadcrumb-max-length);
+  > * {
+    max-width: 100%;
+    display: block;
+  }
+}
+
+li.breadcrumb-item {
+    a {
+        color: var(--ds-breadcrumb-link-color);
+    }
+}
+
+li.breadcrumb-item.active {
+  color: var(--ds-breadcrumb-link-active-color);
+}
+
+.breadcrumb-item + {
+  .breadcrumb-item::before {
+    display: block;
+    content: quote("/") !important;
+    color: white;
+  }
+} 

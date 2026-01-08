@@ -1,0 +1,31 @@
+<div class="card">
+  <div class="p-4">
+  <a *ngIf="linkType != linkTypes.None" [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'" [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null" [routerLink]="['/collections/', object.id]" class="card-img-top position-relative" [attr.title]="'search.results.view-result' | translate">
+    <ds-themed-thumbnail [thumbnail]="(object.logo | async)?.payload" [defaultImage]="'assets/images/item.jpg'" [limitWidth]="false">
+    </ds-themed-thumbnail>
+  </a>
+  <span *ngIf="linkType == linkTypes.None" class="card-img-top position-relative">
+    <ds-themed-thumbnail [thumbnail]="(object.logo | async)?.payload" [defaultImage]="'assets/images/item.jpg'" [limitWidth]="false">
+    </ds-themed-thumbnail>
+  </span>
+  </div>
+  <div class="card-body">
+    <!-- <h4 class="card-title">{{ dsoNameService.getName(object) }}</h4> -->
+    <!-- <p *ngIf="object.shortDescription" class="card-text">{{object.shortDescription}}</p> -->
+    <div *ngIf="linkType != linkTypes.None" class="text-center">
+      <a [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'" [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null" [routerLink]="['/collections/', object.id]" class="h5 text-secondary">{{ dsoNameService.getName(object) }}</a>
+    </div>
+    <div class="bottem-count-text mt-3 w-100">
+      <ul>
+        <li class="icon-text  border-right" title="Item Count">
+          <i class="fa fa-file mr-3" aria-hidden="true"></i>
+          <span>{{object.itemCount}}</span>
+        </li>
+        <li class="icon-text  " title="View Count">
+          <i class="fa fa-eye mr-3" aria-hidden="true"></i>
+          <span>{{object.viewCount}}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

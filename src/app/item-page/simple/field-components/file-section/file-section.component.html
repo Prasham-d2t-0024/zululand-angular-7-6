@@ -1,0 +1,21 @@
+<ng-container *ngVar="(bitstreams$ | async) as bitstreams">
+  <h4 class="mb-2 text-secondary "><i class="fa fa-paperclip"> </i> {{'untypeitem.metadata.attachments' | translate}} [{{bitstreams.length}}]</h4>
+    <div class="file-section theme-scrollBar">
+      <ng-container *ngFor="let author of item.allMetadataValues('dc.bitstream.file'); let last = last;">
+        <div class="col-lg-12 p-2 border-bottom">
+          <a href="{{author}}" class="text-break" target="_blank"><span class="text-secondary  ">{{'home.label.externalfile' | translate}}</span></a>
+        </div>
+      </ng-container>
+      <ds-themed-file-download-link *ngFor="let file of bitstreams; let last=last;" [isBlank]="isBlank" [bitstream]="file" [item]="item">
+      </ds-themed-file-download-link>
+     
+      <ds-themed-loading *ngIf="isLoading" message="{{'loading.default' | translate}}" [showMessage]="false"></ds-themed-loading>
+      <div *ngIf="!isLastPage" class="mt-1" id="view-more">
+        <button class="bitstream-view-more btn btn-outline-secondary btn-sm" (click)="getNextPage()">{{'item.page.bitstreams.view-more' | translate}}</button>
+      </div>
+      <div *ngIf="isLastPage && currentPage != 1" class="mt-1" id="collapse">
+        <button class="bitstream-collapse btn btn-outline-secondary btn-sm" (click)="currentPage = undefined; getNextPage();">{{'item.page.bitstreams.collapse' | translate}}</button>
+      </div>
+    </div>
+  
+</ng-container>

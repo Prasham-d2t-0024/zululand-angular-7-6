@@ -1,0 +1,16 @@
+<ng-container *ngVar="(subCollectionsRDObs | async) as subCollectionsRD">
+  <div *ngIf="subCollectionsRD?.hasSucceeded && subCollectionsRD?.payload.totalElements === 0">
+    <h6>There is no collection in {{ getCommunityTitle() }}</h6>
+  </div >
+  <div class="sub-collectionsList mt-3" *ngIf="subCollectionsRD?.hasSucceeded && subCollectionsRD?.payload.totalElements > 0" @fadeIn>
+    <h4>{{'community.sub-collection-list.head' | translate}}</h4>
+    <ds-viewable-collection
+      [config]="config"
+      [sortConfig]="sortConfig"
+      [objects]="subCollectionsRD"
+      [hideGear]="false">
+    </ds-viewable-collection>
+  </div>
+  <ds-error *ngIf="subCollectionsRD?.hasFailed" message="{{'error.sub-collections' | translate}}"></ds-error>
+  <ds-themed-loading *ngIf="subCollectionsRD?.isLoading" message="{{'loading.sub-collections' | translate}}"></ds-themed-loading>
+</ng-container>

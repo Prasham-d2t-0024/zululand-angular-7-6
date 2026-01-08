@@ -1,0 +1,10 @@
+<ng-container *ngIf="showAccessStatus">
+  <span *ngIf="accessStatus$ | async as accessStatus">
+    
+    <span class="badge text-primary p-0" >
+      <i *ngIf="accessStatus === 'restricted'" class="fa fa-lock fa-lg"></i>
+      <i *ngIf="accessStatus !='restricted'" class="fa fa-unlock fa-lg"></i>
+      
+    </span>
+  </span>
+</ng-container>

@@ -1,0 +1,61 @@
+<div class="row mx-3 data-card">
+  <div *ngIf="showThumbnails" class="col-12 col-md-2 p-1">
+    <a *ngIf="linkType != linkTypes.None" [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+      [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null"
+      [routerLink]="['/communities/' + object.id]" class="dont-break-out">
+
+      <ds-thumbnail [thumbnail]="(object.logo | async)?.payload" [defaultImage]="'assets/images/item.jpg'"
+        [limitWidth]="true">
+      </ds-thumbnail>
+    </a>
+    <span *ngIf="linkType == linkTypes.None" class="dont-break-out">
+      <ds-thumbnail [thumbnail]="(object.logo | async)?.payload" [defaultImage]="'assets/images/item.jpg'"
+        [limitWidth]="true">
+      </ds-thumbnail>
+    </span>
+  </div>
+  <div class="data-col p-2 p-md-1" [ngClass]="showThumbnails ? 'col-12 col-md-10 mt-2 d-flex flex-column' : 'col-md-12 mt-2 d-flex flex-column'">
+    <a *ngIf="linkType != linkTypes.None" [target]="(linkType == linkTypes.ExternalLink) ? '_blank' : '_self'"
+      [attr.rel]="(linkType == linkTypes.ExternalLink) ? 'noopener noreferrer' : null"
+      [routerLink]="['/communities/' + object.id]" class="lead">
+      {{ dsoNameService.getName(object) }}
+    </a>
+    <span *ngIf="linkType == linkTypes.None" class="lead">
+      {{ dsoNameService.getName(object) }}
+    </span>
+    <ds-truncatable-part [id]="object.id" [minLines]="1">
+      <span
+      *ngIf="object.firstMetadataValue('dc.description.abstract')">{{object.firstMetadataValue('dc.description.abstract')}}
+        </span>
+    </ds-truncatable-part>    
+    <p class="email text-primary" *ngIf="object.firstMetadataValue('dc.relation.uri')">
+      <i class="fa fa-envelope mr-2" aria-hidden="true"></i>
+      <span>{{object.firstMetadataValue('dc.relation.uri')}}</span>
+    </p>
+      <!-- <span class="pr-2">&nbsp;</span> creating unwanted space hence commented -->
+    <span *ngIf="object.archivedItemsCount >= 0"
+      class="badge badge-pill badge-secondary align-self-center archived-items-lead">
+      {{object.archivedItemsCount}}
+    </span>
+  </div>
+  <div class="bottem-count-text mt-3 w-100">
+    <ul>
+      <li class="icon-text  border-right">
+        <i class="fa fa-inbox mr-3" aria-hidden="true"></i>
+        <span>{{object.subCommunityCount}}</span>
+      </li>
+      <li class="icon-text  border-right">
+        <i class="fa fa-folder mr-3" aria-hidden="true"></i>
+        <span>{{object.collectionCount}}</span>
+      </li>
+      <li class="icon-text  border-right">
+        <i class="fa fa-file mr-3" aria-hidden="true"></i>
+        <span>{{object.itemCount}}</span>
+      </li>
+      <li class="icon-text  ">
+        <i class="fa fa-eye mr-3" aria-hidden="true"></i>
+        <span>{{object.viewCount}}</span>
+      </li>
+    </ul>
+  </div>
+</div>

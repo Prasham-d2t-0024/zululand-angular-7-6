@@ -1,0 +1,12 @@
+.ds-full-screen-loader {
+  height: 100vh;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.angular-editor .angular-editor-wrapper .angular-editor-textarea{
+  background-color: #fff !important;
+  background: #fff !important;
+}

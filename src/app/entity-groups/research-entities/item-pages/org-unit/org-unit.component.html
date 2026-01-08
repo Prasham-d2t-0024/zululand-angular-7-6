@@ -1,0 +1,502 @@
+<ds-themed-results-back-button *ngIf="showBackButton | async" [back]="back"></ds-themed-results-back-button>
+<div class="container item-detail-page">
+
+  <div class="row boxshadow  border itemdetail-image" style="background-color: #f8f8f8 !important;">
+    <div class="col-xs-12 col-md-2 py-3">
+      <ng-container *ngIf="!(mediaViewer.image || mediaViewer.video)">
+        <ds-metadata-field-wrapper [hideIfNoTextContent]="false">
+          <ds-themed-thumbnail [thumbnail]="object?.thumbnail | async"
+            [defaultImage]="'assets/images/item.jpg'"></ds-themed-thumbnail>
+        </ds-metadata-field-wrapper>
+      </ng-container>
+    </div>
+    <div class="col-xs-12 col-md-10 py-3">
+      <div class="w-100">
+
+        <p class="h6 badge badge-primary  mb-2" *ngIf="object.firstMetadataValue('dc.type')">{{
+          object.firstMetadataValue('dc.type') | translate }}
+
+        </p>
+      </div>
+      <div class="d-flex flex-row mb-2 ">
+        <ds-themed-item-page-title-field [item]="object" class=""></ds-themed-item-page-title-field>
+        <ds-dso-edit-menu></ds-dso-edit-menu>
+      </div>
+
+      <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('organization.legalName')">
+        <span class="font-weight-bold h6">{{'orgunit.page.legalName' | translate}} </span>
+        <p class="slash text-black">{{object.firstMetadataValue('organization.legalName')}}</p>
+      </div>
+      <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('organization.emailID')">
+        <span class="font-weight-bold h6">{{'orgunit.page.emailID' | translate}} </span>
+        <p class="slash text-black">{{object.firstMetadataValue('organization.emailID')}}</p>
+      </div>
+      <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('organization.phone')">
+        <span class="font-weight-bold h6">{{'orgunit.page.phone' | translate}} </span>
+        <p class="slash text-black">{{object.firstMetadataValue('organization.phone')}}</p>
+      </div>
+
+      <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('organization.hod')">
+        <span class="font-weight-bold h6">{{'organization.page.hod' | translate}} </span>
+        <p class="slash text-black">{{object.firstMetadataValue('organization.hod')}}</p>
+      </div>
+
+      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.faculty')">
+        <div class="font-weight-bold h6">{{'untypeitem.metadata.faculty' | translate}}</div>
+        <ng-container *ngFor="let faculty of object.allMetadataValues('dc.faculty'); let last = last;">
+          <a [routerLink]="['/search']" [queryParams]="{'f.faculty':faculty+',equals'}">{{faculty}}</a>
+          <span *ngIf="!last"> | </span>
+        </ng-container>
+      </div>
+
+    </div>
+    <div class="container-fluid itemdetail-footer-actions">
+      <div class="row text-secondary  action-row">
+        <div class="col-12 col-md-6 footeractions-left">
+          <div class="d-flex flex-wrap flex-md-nowrap flex-action">
+            <div class="col-6 col-md-3 border-right text-center">
+              <span>
+                <i class="fa fa-lg fa-eye mr-1" aria-hidden="true"></i>
+                <span>Views</span>
+              </span>
+              <p>{{object.viewcount}}</p>
+            </div>
+            <div class="col-6 col-md-3 border-right text-center">
+              <span>
+                <i class="fa fa-lg fa-download mr-1" aria-hidden="true"></i>
+                <span>Downloads</span>
+              </span>
+              <p>0</p>
+            </div>
+            <div class="col-6 col-md-3 border-right text-center">
+              <div class="nav-item dropdown" ngbDropdown>
+                <a class="p-0 nav-link dropdown-toggle  " id="navbarScrollingDropdown" role="button"
+                  data-bs-toggle="dropdown" aria-expanded="false" ngbDropdownToggle>
+                  <i class="fa fa-lg fa-star mr-1" aria-hidden="true"> </i> Rating
+                </a>
+                <div class="container " style="min-width: 352px;" ngbDropdownMenu
+                  aria-labelledby="navbarScrollingDropdown">
+                  <div class="row  border-bottom text-center m-0 p-2">
+                    <div class="col-6  border-right ">
+                      <div class="text-muted ">Your Rating</div>
+                      <div class="ratingSectionNum">
+                        <span class="font-weight-bold h5">
+                          <span *ngIf="!(isAuthorized$ | async)">N</span>
+                          <!-- <span *ngIf="(isAuthorized$ | async)">N</span> -->
+                          <span *ngIf="(isAuthorized$ | async) && myrating">{{myrating.ratingcount=== 0 ?
+                            'N':myrating.ratingcount }}</span>
+                        </span>
+                        <span class="ratedDivider">/</span>
+                        <span class="h6">
+                          <span *ngIf="!(isAuthorized$ | async)">A</span>
+                          <span *ngIf="(isAuthorized$ | async) && myrating">{{ myrating.ratingcount === 0 ? 'A': 5
+                            }}</span>
+                          <!-- <span *ngIf="(isAuthorized$ | async)">A</span> -->
+                        </span>
+                      </div>
+                      <div class="ratingSectionStars">
+                        <div class="smallfix yourratingdiv">
+                          <ng-container *ngIf="!myrating">
+                            <span *ngFor="let item of[].constructor(5)">
+                              <i class="far fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+                            </span>
+                          </ng-container>
+                          <ng-container *ngIf="myrating">
+                            <span *ngFor="let item of[].constructor(myrating.ratingcount)">
+                              <i class="fa fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+
+                            </span>
+                            <span *ngFor="let item of[].constructor(5-myrating.ratingcount)">
+                              <i class="far fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+                            </span>
+                          </ng-container>
+
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="text-muted">Avg. Rating</div>
+                      <div class="ratingSectionNum">
+                        <span class="font-weight-bold h5">{{ avgrating }}</span>
+                        <!-- <span class="font-weight-bold h5">0</span> -->
+                        <span class="ratedDivider">/</span><span class="h6">5</span>
+                      </div>
+                      <div class="ratingSectionStars">
+                        <div class="smallfix yourratingdiv">
+                          <!-- <i class="far fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+                      <i class="far fa-sm fa-star  ml-1" aria-hidden="true"> </i>
+                      <i class="far fa-sm fa-star  ml-1" aria-hidden="true"> </i>
+                      <i class="far fa-sm fa-star  ml-1" aria-hidden="true"> </i>
+                      <i class="far fa-sm fa-star ml-1" aria-hidden="true"> </i> -->
+
+
+                          <span *ngFor="let item of[].constructor(avgrating)">
+                            <i class="fa fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+
+                          </span>
+                          <span *ngFor="let item of[].constructor(5-avgrating)">
+                            <i class="far fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+                          </span>
+                        </div>
+                      </div>
+                      <small id="totalrating">( {{object.ratingcount}} Reviews )</small>
+                    </div>
+                  </div>
+
+                  <div class="row  m-0 p-2">
+                    <div class="col-12 ">
+                      <div class="text-muted h6">Rating Breakup</div>
+
+                      <div class="viwerBreakupRow starFive" *ngFor="let brestart of breakingRating | keyvalue">
+                        <div class="side">
+                          <div>{{brestart.key}} <i class="fa fa-star"></i></div>
+                        </div>
+                        <div class="middle w-75">
+                          <div class="bar-container bg-secondary "
+                            [style.width]="getwidthRating(brestart.value,object.ratingcount) " style="height: 10px;">
+                          </div>
+                        </div>
+                        <div class="right ">
+                          <div class="count5start">{{brestart.value}}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+              <p>
+                <span *ngFor="let item of[].constructor(avgrating)">
+                  <i class="fa fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+
+                </span>
+                <span *ngFor="let item of[].constructor(5-avgrating)">
+                  <i class="far fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+                </span>
+              </p>
+            </div>
+            <!-- <div class="col-6 col-md-3 border-right text-center">
+              <span>
+                <i class="fa fa-lg fa-comment mr-1" aria-hidden="true">
+                </i>
+                <span>Comments</span>
+              </span>
+              <p>{{object.commentcount}}</p>
+            </div> -->
+          </div>
+        </div>
+        <!-- Flex Container in Column Direction -->
+        <div class="col-12 col-md-6 footeractions-right">
+          <div class="row justify-content-around justify-content-md-end m-md-0 mb-2 flex-action">
+            <div class="align-self-end pr-4 text-center" *ngIf="isAuthorized$ | async">
+              <span>
+                <i [ngClass]="(bookmarkitem!=null && bookmarkitem.status==='active')?'fa':'far'"
+                  [attr.title]="(bookmarkitem!=null && bookmarkitem.status==='active') ? 'Click here to UnBookmark this item' : 'Click here to Bookmark this item'"
+                  class=" fa-lg  fa-bookmark element" aria-hidden="true" (click)="savebookmark()">
+                </i>
+              </span>
+            </div>
+            <div class="text-center user-rating-action">
+              <p class="m-0 p-0">Rating this item</p>
+              <span *ngIf="!(isAuthorized$ | async) && !myrating">
+                <i class="far fa-lg fa-star element " aria-hidden="true" style="cursor: pointer;"
+                  (click)="saveRating(1)">
+                </i>
+                <i class="far fa-lg fa-star element " aria-hidden="true" style="cursor: pointer;"
+                  (click)="saveRating(2)">
+                </i>
+                <i class="far fa-lg fa-star element" aria-hidden="true" style="cursor: pointer;"
+                  (click)="saveRating(3)">
+                </i>
+                <i class="far fa-lg fa-star element" aria-hidden="true" style="cursor: pointer;"
+                  (click)="saveRating(4)">
+                </i>
+                <i class="far fa-lg fa-star element" aria-hidden="true" style="cursor: pointer;"
+                  (click)="saveRating(5)">
+                </i>
+              </span>
+              <ng-container *ngIf="myrating">
+
+                <span *ngFor="let item of[].constructor(5);let i=index">
+                  <!-- <span>{{i}}</span> -->
+                  <i class="fa fa-sm fa-star ml-1 " *ngIf="i < myrating.ratingcount" aria-hidden="true"
+                    style="cursor: pointer;" (click)="saveRating(i+1)"> </i>
+                  <i class="far fa-sm fa-star ml-1 " *ngIf="i >= myrating.ratingcount" aria-hidden="true"
+                    style="cursor: pointer;" (click)="saveRating(i+1)"> </i>
+                </span>
+              </ng-container>
+            </div>
+            <div class="d-flex align-self-end justify-content-center justify-content-md-start pl-4 action-icons">
+              <div class="pr-3 text-center">
+                <div ngbDropdown class="d-inline-block">
+                  <a type="button" class="arrowhide dropdown-toggle" id="dropdownBasic1" ngbDropdownToggle
+                    aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-lg fa-share-alt " aria-hidden="true"> </i>
+                  </a>
+                  <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+
+                    <a ngbDropdownItem calss=""
+                      href="https://facebook.com/sharer/sharer.php?u={{object.firstMetadataValue('dc.identifier.uri')}}">
+                      <i class="fab fa-facebook-f facebookshare sharbutton"></i> <span class="ml-3">Facebook</span>
+                    </a>
+                    <a ngbDropdownItem calss=""
+                      href="https://twitter.com/share?url={{object.firstMetadataValue('dc.identifier.uri')}}">
+                      <i class="fab fa-twitter twittershare sharbutton"></i> <span class="ml-3">X</span>
+                    </a>
+                    <a ngbDropdownItem calss=""
+                      href="whatsapp://send?text={{object.firstMetadataValue('dc.identifier.uri')}}">
+                      <i class="fab fa-whatsapp wahtsupshare sharbutton"></i> <span class="ml-3">WhatsApp</span>
+                    </a>
+                    <a ngbDropdownItem calss=""
+                      href="https://www.linkedin.com/shareArticle?mini=true&url={{object.firstMetadataValue('dc.identifier.uri')}}">
+                      <i class="fab fa-linkedin linkshare sharbutton"></i> <span class="ml-3">LinkedIn</span>
+                    </a>
+                  </div>
+                </div>
+
+
+
+
+              </div>
+              <div class="pr-3 text-center" (click)="Citation(content)">
+                <a target="_self">
+                  <i class=" fa fa-lg fa-quote-right  " aria-hidden="true">
+                  </i>
+                </a>
+              </div>
+              <div class="pr-3 text-center">
+                <a target="_self" href="mailto:?subject={{object.firstMetadataValue('dc.identifier.uri')}}">
+                  <i class=" far fa-lg fa-envelope" aria-hidden="true"> </i>
+                </a>
+              </div>
+              <div class="pr-3 text-center" (click)="printPage()">
+                <span>
+                  <i class=" fa fa-lg fa-print  " aria-hidden="true"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row boxshadow row-cols mt-4 info-block">
+    <!-- <div class="col-12 col-md-4 mb-md-0 mb-3 pr-md-1 p-0 attachments">
+
+      <div class="bg-white h-100 p-3 w-100">
+
+        <ds-item-page-file-section [isBlank]="isBlank" [item]="object"></ds-item-page-file-section>
+
+      </div>
+    </div> -->
+    <div class="col-12 col-md-12 pl-md-1 p-0 moredetails " style="background-color: #f8f8f8 !important;">
+      <div class=" h-100 p-3 w-100" style="background-color: #f8f8f8 !important;">
+        <h4 class="mb-2 text-secondary ">More Detail</h4>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contributor.editor')">
+          <span class="font-weight-bold h6">Editor </span>
+          <ng-container *ngFor="let language of object.allMetadataValues('dc.contributor.editor'); let last = last;">
+            <p class="mb-1 text-black">{{language}}</p>
+
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('organization.about')">
+          <h6 class="font-weight-bold h6">About </h6>
+          <p class="text-black">{{object.firstMetadataValue('organization.about')}}</p>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.date.issued')">
+          <span class="font-weight-bold h6">Issue Date </span>
+          <p class="text-black">{{object.firstMetadataValue('dc.date.issued')}}</p>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.organization')">
+          <span class="font-weight-bold h6">Organization </span>
+          <ng-container *ngFor="let subject of object.allMetadataValues('dc.organization'); let last = last;">
+            <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.organization':subject+',equals'}">
+              <p class="mb-1 badge badge-secondary  ">{{subject}}</p>
+            </a>
+
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.source')">
+          <span class="font-weight-bold h6">Source(s) </span>
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.source'); let last = last;">
+            <a [routerLink]="['/search']" [queryParams]="{'f.source':author+',equals'}">
+              <p class="mb-1 badge badge-secondary  ">{{author}}</p>
+            </a>
+
+          </ng-container>
+        </div>
+        <div *ngIf="object.firstMetadataValue('organization.website')" class="item-list-org-unit-description mb-3">
+          <span class="font-weight-bold h6">Website</span>
+          <a href="{{object.firstMetadataValue('organization.website')}}" target="_blank">
+            <p>{{object.firstMetadataValue('organization.website')}}</p>
+          </a>
+
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.description.abstract')">
+          <span class="font-weight-bold h6">Abstract </span>
+          <p [innerHTML]="object.firstMetadataValue('dc.description.abstract')"></p>
+          <!-- <ds-truncatable [id]="2" *ngIf="object !== undefined && object !== null">
+            <ds-truncatable-part [id]="2" [minLines]="3">
+              <span class="slash text-black" [innerHTML]="object.firstMetadataValue('dc.description.abstract')"></span>
+            </ds-truncatable-part>
+          </ds-truncatable> -->
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.description')">
+          <span class="font-weight-bold h6">Description </span>
+          <p>{{object.firstMetadataValue('dc.description')}}</p>
+          <!-- <ds-truncatable [id]="1" *ngIf="object !== undefined && object !== null">
+            <ds-truncatable-part [id]="1" [minLines]="3">
+              <p class="slash text-black">{{object.firstMetadataValue('dc.description')}}</p>
+            </ds-truncatable-part>
+          </ds-truncatable> -->
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.identifier.doi')">
+          <span class="font-weight-bold h6">{{'publication.page.identifier.doi' | translate}} </span>
+          <a href="{{object.firstMetadataValue('dc.identifier.doi')}}" target="_blank">
+            <p class="slash text-black">{{object.firstMetadataValue('dc.identifier.doi')}}</p>
+          </a>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.volume')">
+          <span class="font-weight-bold h6">{{'publication.page.volume' | translate}} </span>
+          <p class="slash text-black">{{object.firstMetadataValue('dc.volume')}}</p>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.journal.name')">
+          <span class="font-weight-bold h6">{{'publication.page.name' | translate}} </span>
+          <p class="slash text-black">{{object.firstMetadataValue('dc.journal.name')}}</p>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.pages')">
+          <span class="font-weight-bold h6">{{'publication.page.pages' | translate}} </span>
+          <p class="slash text-black">{{object.firstMetadataValue('dc.pages')}}</p>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.openaccess')">
+          <span class="font-weight-bold h6">{{'publication.page.openaccess' | translate}} </span>
+          <p class="slash text-black">{{object.firstMetadataValue('dc.openaccess')}}</p>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.research.area')">
+          <span class="font-weight-bold h6">{{'item.page.research.area' | translate}} </span>
+          <p class="slash text-black">{{object.firstMetadataValue('dc.research.area')}}</p>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.publisher')">
+          <span class="font-weight-bold h6">{{'publication.page.publisher' | translate}} </span>
+          <p class="slash text-black">{{object.firstMetadataValue('dc.publisher')}}</p>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('person.biography')">
+          <span class="font-weight-bold h6">Biography </span>
+          <p> {{object.firstMetadataValue('person.biography')}}</p>
+
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('person.research.interest')">
+          <span class="font-weight-bold h6">Research Intrest </span>
+          <p> {{object.firstMetadataValue('person.research.interest')}}</p>
+
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('person.role')">
+          <span class="font-weight-bold h6">Role </span>
+          <p> {{object.firstMetadataValue('person.role')}}</p>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- <div class="row boxshadow bg-white mt-4 comments-actions d-none">
+    <div class="container-fluid bg-white pb-3">
+      <form [formGroup]="CommentFormGroup">
+        <div class="row mb-2">
+          <div class="col-lg-12 p-3">
+            <span class="text-secondary  h4 ">Comments </span>
+            <span class="text-secondary ">(Leave your Comments here about this item.)</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12 col-md-9 col-lg-10">
+            <input type="text" value="" formControlName="comments" class="form-control"
+              placeholder="Enter Comments here">
+          </div>
+          <div class="col-12 col-md-3 col-lg-2 mt-2 m-md-0 px-2">
+            <button (click)="savecomment()" [disabled]="CommentFormGroup.invalid"
+              class="form-control subBtn btn btn-secondary ">
+              <p class="ellipsify m-0">Add Comment</p>
+              <i class="fa fa-plus-circle ml-2"> </i>
+            </button>
+          </div>
+        </div>
+      </form>
+      <ds-pagination *ngIf="(pageInfoState$ | async)?.totalElements > 0 && !loder" [paginationOptions]="config"
+        [hidesortOption]="false" [pageInfoState]="pageInfoState$" (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)" [collectionSize]="(pageInfoState$ | async)?.totalElements"
+        [hideGear]="true" [hidePagerWhenSinglePage]="true" [hidePaginationDetail]="true" style="width:100%">
+        <div class="row mt-3 " *ngFor="let commentobj of (comment$ | async)?.page; let i=index;">
+          <ng-container *ngIf="commentobj.status!=3">
+
+          </ng-container>
+          <div class="col-lg-12 border-top">
+            <p class="mt-2">{{commentobj.comment}}</p>
+          </div>
+          <div class="col-lg-12 text-secondary " style=" text-align: right;">
+
+            <span>{{commentobj.submitterRest.metadata['eperson.firstname'][0].value+'
+              '+commentobj.submitterRest.metadata['eperson.lastname'][0].value}} add comment on {{commentobj.actiondate
+              |
+              date:'yyyy-MM-dd HH:mm:ss'}} </span> <a *ngIf="isAuthorized$ | async" (click)="flagComment(commentobj)"> |
+              Flag this Comment</a>
+          </div>
+        </div>
+      </ds-pagination>
+
+    </div>
+  </div> -->
+  <div class="row boxshadow bg-white mt-4 card-grid-row">
+    <ds-tabbed-related-entities-search [item]="object" [relationTypes]="[{
+                                              label: 'isOrgUnitOfPerson',
+                                              filter: 'isOrgUnitOfPerson',
+                                              configuration: 'person-relationships'
+                                            },
+                                            {
+                                              label: 'isOrgUnitOfPublication',
+                                              filter: 'isOrgUnitOfPublication',
+                                              configuration: 'default-relationships'
+                                            }]">
+    </ds-tabbed-related-entities-search>
+  </div>
+  <div class="row boxshadow bg-white mt-4">
+    <ng-template #content let-modal>
+      <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Citation</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="container modal-body">
+        <div class="row">
+          <div class="col-12">
+            <!-- <p #userinput>{{cirtation}}</p> -->
+            <div class="main-div" *ngFor="let item of cirtation">
+              <div class="key">{{item[0]}}</div>
+              <div class="value" #userInput>{{ item[1] }}<i class="fa fa-copy" ngbTooltip="Copy"
+                  (click)="copyInputMessage(userInput)"></i></div>
+            </div>
+          </div>
+          <div class="col-12 d-flex border-top mt-3 pt-3">
+            <!-- <label class="form-check-label">Style</label> -->
+            <select class="form-control mr-3" [(ngModel)]="cirteanselection">
+              <option value="RefMan" selected>RefMan</option>
+              <option value="EndNote">EndNote</option>
+              <option value="BibTeX">BibTeX</option>
+              <option value="xlsx">Export Excel(xlsx)</option>
+              <option value="csv">Export Excel(csv)</option>
+            </select>
+            <button class="float-right mr-3 btn btn-secondary " (click)="dowloadFile()">Download</button>
+          </div>
+        </div>
+      </div>
+
+    </ng-template>
+  </div>
+</div>

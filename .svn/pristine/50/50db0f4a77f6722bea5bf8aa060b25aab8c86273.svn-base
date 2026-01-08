@@ -1,0 +1,16 @@
+<div class="border-bottom p-1 attachments-details">
+  <a target="_blank" [routerLink]="(bitstreamPath$| async)?.routerLink" class="dont-break-out"
+    [queryParams]="(bitstreamPath$| async)?.queryParams" [target]="isBlank ? '_blank': '_self'" [ngClass]="cssClasses">
+    <p class="mb-1">
+      <span>{{ dsoNameService.getName(bitstream) }}</span>
+      <span> ({{(bitstream.sizeBytes) | dsFileSize }})</span>
+    </p>
+    <p class="mb-1 desccolor" *ngIf="bitstream.firstMetadataValue('dc.description')">
+      ({{(bitstream.firstMetadataValue('dc.description')) }})</p>
+    <p *ngIf="!(canDownload$ |async)" class="mb-1 pr-1"><i class="fas fa-lock"></i> Request copy</p>
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+  </a>
+  <ng-template #content>
+    <ng-content></ng-content>
+  </ng-template>
+</div>

@@ -1,0 +1,21 @@
+<div class="">
+        <ng-container *ngVar="(itemRD$ | async) as itemRD">
+                <div [ngClass]="placeholderFontClass" *ngIf="itemRD?.hasSucceeded && itemRD?.payload?.page.length > 0"
+                        @fadeIn>
+                        <div class="d-flex flex-row ng-tns-c416-2"></div>
+                        <h2> {{'home.recent-submissions.head' | translate}}</h2>
+
+                        <div class="recent-item-list mb-4" *ngFor="let item of itemRD?.payload?.page">
+                                <ds-listable-object-component-loader [object]="item" [viewMode]="viewMode" class="pb-4">
+                                </ds-listable-object-component-loader>
+                        </div>
+                </div>
+                <ds-error *ngIf="itemRD?.hasFailed" message="{{'error.recent-submissions' | translate}}"></ds-error>
+                <ds-loading *ngIf="!itemRD || itemRD.isLoading" message="{{'loading.recent-submissions' | translate}}">
+                </ds-loading>
+        </ng-container>
+</div>
+<div class="d-flex align-items-center flex-column justify-content-between w-100 pagination-container">
+        <button (click)="onLoadMore()" class="btn btn-primary search-button">
+                {{'vocabulary-treeview.load-more' | translate }} ...</button>
+</div>

@@ -1,0 +1,35 @@
+<div class="clamp-{{background}}-{{lines}} min-{{minLines}} {{type}} {{fixedHeight ? 'fixedHeight' : ''}}">
+  <div #content class="content dont-break-out theme-scrollBar">
+    <ng-content></ng-content>
+  </div>
+  <div class="align-items-center d-flex justify-content-end pr-1 w-100 viewmore-btn">
+    <button class="btn btn-link p-0 expandButton" dsDragClick (actualClick)="toggle()" *ngIf="!expand && expandable"
+      style="min-height: 18px!important;">
+      <small class="align-items-center d-flex">
+        <i class="fas fa-angle-down"></i>
+        <span class="ml-1">{{'communityList.showMore' | translate}}</span>
+      </small>
+    </button>
+    <button class="btn btn-link p-0 collapseButton" dsDragClick (actualClick)="toggle()" *ngIf="expand && expandable"
+      style="min-height: 18px!important;">
+      <small class="align-items-center d-flex">
+        <i class="fas fa-angle-up"></i>
+        <span class="ml-1">{{'truncatable.showless' | translate}}</span>
+      </small>
+    </button>
+  </div>
+</div>
+
+<!-- <div class="clamp-{{background}}-{{lines}} min-{{minLines}} {{type}} {{fixedHeight ? 'fixedHeight' : ''}}">
+  <div #content class="content dont-break-out preserve-line-breaks">
+    <ng-content></ng-content>
+  </div>
+  <button class="btn btn-link p-0 expandButton" dsDragClick (actualClick)="toggle()" *ngIf="!expandable">
+    <i class="fas fa-angle-down"></i>
+    <span class="ml-1">{{ 'item.truncatable-part.show-more' | translate }}</span>
+  </button>
+  <button class="btn btn-link p-0 collapseButton" dsDragClick (actualClick)="toggle()" *ngIf="expand && expandable">
+    <i class="fas fa-angle-up"></i>
+    <span class="ml-1">{{ 'item.truncatable-part.show-less' | translate }}</span>
+  </button>
+</div> -->

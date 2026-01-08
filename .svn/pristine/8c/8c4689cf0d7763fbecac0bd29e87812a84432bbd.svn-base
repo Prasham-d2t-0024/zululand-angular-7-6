@@ -1,0 +1,16 @@
+.comcol-browse {
+  select {
+    border: 1px solid #29a8e0;
+    border-radius: 0;
+    height: 50px;
+  }
+ .btn-cornerframe {
+  min-width: 100px;
+  max-width: 250px;
+   @media screen and (max-width: map-get($grid-breakpoints, sm)) {
+     .img-col {
+       margin-bottom: 5px;
+     }
+   }
+ }
+}

@@ -1,0 +1,90 @@
+import { ChangeDetectorRef, Component } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { AboutusDataService } from 'src/app/core/data/aboutus-data.service';
+import { NotificationsService } from 'src/app/shared/notifications/notifications.service';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
+
+@Component({
+  selector: 'ds-about-us',
+  templateUrl: './about-us.component.html',
+  styleUrls: ['./about-us.component.scss']
+})
+export class AboutUsComponent {
+  typedValue:string;
+  id: string;
+  editorConfig: AngularEditorConfig = {
+    editable: true,
+      spellcheck: true,
+      height: 'auto',
+      minHeight: '250px',
+      maxHeight: 'auto',
+      width: 'auto',
+      minWidth: '0',
+      translate: 'yes',
+      enableToolbar: true,
+      showToolbar: true,
+      placeholder: 'Enter text here...',
+      defaultParagraphSeparator: '',
+      defaultFontName: '',
+      defaultFontSize: '',
+      fonts: [
+        {class: 'arial', name: 'Arial'},
+        {class: 'times-new-roman', name: 'Times New Roman'},
+        {class: 'calibri', name: 'Calibri'},
+        {class: 'comic-sans-ms', name: 'Comic Sans MS'}
+      ],
+      customClasses: [
+      {
+        name: 'quote',
+        class: 'quote',
+      },
+      {
+        name: 'redText',
+        class: 'redText'
+      },
+      {
+        name: 'titleText',
+        class: 'titleText',
+        tag: 'h1',
+      },
+    ],
+    uploadUrl: 'v1/image'
+};
+  constructor(private aboutusDataService: AboutusDataService,
+    private notificationsService : NotificationsService,
+    private cdref: ChangeDetectorRef) {
+      this.aboutusDataService.getAboutus().pipe().subscribe((data)=>{
+        if(!!data && !!data['_embedded'] && !!data['_embedded']['abouts'][0]['texteditor']) {
+          this.id = data['_embedded']['abouts'][0]['uuid'];
+          this.typedValue = data['_embedded']['abouts'][0]['texteditor'];
+          this.cdref.detectChanges();
+        }
+      });
+     }
+  
+  saveTypedValue(value: string) {
+    this.typedValue = value;
+  }
+
+  submit() {
+    if(!!this.id){
+      this.aboutusDataService.updateAboutus(this.typedValue,this.id).pipe().subscribe((data) => {
+        if(data.state === "Success") {
+          // this.typedValue = "";
+          this.typedValue = data.payload.texteditor
+          this.notificationsService.success('About Us Updated successfully!');
+        }
+      });
+  } else {
+    this.aboutusDataService.submit(this.typedValue).pipe().subscribe((data) => {
+      if(data.state === "Success") {
+        // this.typedValue = "";
+       // console.log(data);
+        this.id= data.payload.id
+        this.typedValue = data.payload.texteditor
+        this.notificationsService.success('About Us added successfully!');
+      }
+    });
+  }
+  }
+}

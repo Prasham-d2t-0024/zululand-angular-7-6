@@ -1,0 +1,39 @@
+.askus-container {
+  ::ng-deep .note-container {
+    @media screen and (max-width: 767px) {
+      text-align: center;
+    }
+  }
+  table {
+    tr {
+      td {
+        padding: 10px;
+
+        &.td-actionIcons {width: 80px;}
+      }
+    }
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-height: 60px;
+    min-height: 60px;
+    padding: 0;
+  }
+}
+
+.scroll-container {
+  display: inline-table; 
+  height: auto; 
+  margin: 0; 
+  max-height: 295px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+
+  .recent-item-list {
+    &:last-child {
+      margin-bottom: 0 !important;
+    }
+  }
+}

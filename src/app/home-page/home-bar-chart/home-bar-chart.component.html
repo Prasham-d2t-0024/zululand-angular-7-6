@@ -1,0 +1,37 @@
+<ngx-charts-bar-horizontal-2d *ngIf="!!chartOptions && !isLoading"
+  [scheme]="colorScheme"
+  [schemeType]="schemeType"
+  [results]="chartOptions"
+  [gradient]="gradient"
+  [xAxis]="showXAxis"
+  [yAxis]="showYAxis"
+  [legend]="showLegend"
+  [legendPosition]="legendPosition"
+  [showXAxisLabel]="showXAxisLabel"
+  [showYAxisLabel]="showYAxisLabel"
+  [xAxisLabel]="xAxisLabel"
+  [yAxisLabel]="yAxisLabel"
+  [showGridLines]="false">
+</ngx-charts-bar-horizontal-2d>
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 450px;" *ngIf="!!isLoading">
+  <div class="spinner-border" role="status">
+    <span class="sr-only">{{'home.label.loading' | translate}}</span>
+  </div>
+</div>
+<!-- <ngx-charts-bar-horizontal
+  [view]="view"
+  [scheme]="colorScheme"
+  [results]="chartData"
+  [gradient]="gradient"
+  [xAxis]="showXAxis"
+  [yAxis]="showYAxis"
+  [legend]="showLegend"
+  [showXAxisLabel]="showXAxisLabel"
+  [showYAxisLabel]="showYAxisLabel"
+  [xAxisLabel]="xAxisLabel"
+  [yAxisLabel]="yAxisLabel"
+  (select)="onSelect($event)"
+  (activate)="onActivate($event)"
+  (deactivate)="onDeactivate($event)">
+</ngx-charts-bar-horizontal> -->

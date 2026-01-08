@@ -1,0 +1,17 @@
+:host {
+    .dropdown-toggle::after {
+        display: none;
+    }
+    .dropdown-item {
+        padding-left: 20px;
+    }
+}
+
+.margin-right {
+    margin-right: .5em;
+}
+.btn {
+    &:focus {
+      box-shadow: none;
+    }
+  }

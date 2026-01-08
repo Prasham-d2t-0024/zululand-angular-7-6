@@ -1,0 +1,8 @@
+<ds-configuration-search-page
+  [fixedFilterQuery]="fixedFilter"
+  [configuration]="configuration"
+  [searchEnabled]="searchEnabled"
+  [sideBarWidth]="sideBarWidth"
+  [removeRightPadding]="true"
+  [increaseSideBarPadding]="false">
+</ds-configuration-search-page>

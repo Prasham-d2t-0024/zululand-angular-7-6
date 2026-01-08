@@ -1,0 +1,20 @@
+.scroll-container {
+    height: calc(500px - 105px);
+    margin: 0 0 15px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    padding: 5px 0;
+    @media screen and (max-width: map-get($grid-breakpoints, sm)) {
+      height: 500px;
+    }
+
+    .recent-item-list {
+      &:last-child {
+        margin-bottom: 0 !important;
+      }
+    }
+}
+
+.pagination-container {
+    height: 50px;
+}

@@ -1,0 +1,708 @@
+import { ChangeDetectorRef, Component, EventEmitter, Inject, Input, OnInit, Output, OnDestroy } from '@angular/core';
+import { environment } from '../../../../../environments/environment';
+import { Item } from '../../../../core/shared/item.model';
+import { getItemPageRoute } from '../../../item-page-routing-paths';
+import { RouteService } from '../../../../core/services/route.service';
+import { BehaviorSubject, combineLatest as observableCombineLatest, Observable, Subject, of, Subscription } from 'rxjs';
+import { filter, map, mergeMap, startWith, switchMap, take } from 'rxjs/operators';
+import { getDSpaceQuery, isIiifEnabled, isIiifSearchEnabled } from './item-iiif-utils';
+
+import { ActivatedRoute, Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { AccessStatusDataService } from 'src/app/core/data/access-status-data.service';
+import { getAllCompletedRemoteData, getAllSucceededRemoteData, getFirstCompletedRemoteData, getFirstSucceededRemoteData, getFirstSucceededRemoteDataPayload, getRemoteDataPayload, toDSpaceObjectListRD } from 'src/app/core/shared/operators';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { CommentDataService } from '../../../../core/data/comment-data.service';
+import { NotificationsService } from 'src/app/shared/notifications/notifications.service';
+import { Comment } from 'src/app/core/shared/Comment.model';
+import { RemoteData } from 'src/app/core/data/remote-data';
+import { PaginatedList, buildPaginatedList } from 'src/app/core/data/paginated-list.model';
+import { PaginationComponentOptions } from 'src/app/shared/pagination/pagination-component-options.model';
+import { SortDirection, SortOptions } from 'src/app/core/cache/models/sort-options.model';
+import { PaginationService } from 'src/app/core/pagination/pagination.service';
+import { DSONameService } from 'src/app/core/breadcrumbs/dso-name.service';
+import { SearchService } from 'src/app/core/shared/search/search.service';
+import { APP_CONFIG, AppConfig } from 'src/config/app-config.interface';
+import { PaginatedSearchOptions } from 'src/app/shared/search/models/paginated-search-options.model';
+import { DSpaceObjectType } from 'src/app/core/shared/dspace-object-type.model';
+import { BROWSE_LINKS_TO_FOLLOW } from 'src/app/core/browse/browse.service';
+import { CollectionDataService } from 'src/app/core/data/collection-data.service';
+import { Collection } from 'src/app/core/shared/collection.model';
+import { ViewMode } from 'src/app/core/shared/view-mode.model';
+import { currentPath } from 'src/app/shared/utils/route.utils';
+import { NoContent } from 'src/app/core/shared/NoContent.model';
+import { AuthorizationDataService } from 'src/app/core/data/feature-authorization/authorization-data.service';
+import { FeatureID } from 'src/app/core/data/feature-authorization/feature-id';
+import { PageInfo } from 'src/app/core/shared/page-info.model';
+import { hasValue } from 'src/app/shared/empty.util';
+import { Bookmark } from 'src/app/core/shared/bookmark.model';
+import { BookmarkDataService } from 'src/app/core/data/bookmark-data.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ItemDataService } from 'src/app/core/data/item-data.service';
+import { RelationshipDataService } from 'src/app/core/data/relationship-data.service';
+import { ChartService } from 'src/app/core/shared/trending-charts/chart.service';
+import { SearchConfigurationService } from 'src/app/core/shared/search/search-configuration.service';
+declare var $: any;
+
+@Component({
+  selector: 'ds-item',
+  template: ''
+
+})
+/**
+ * A generic component for displaying metadata and relations of an item
+ */
+export class ItemComponent implements OnInit, OnDestroy {
+  @Input() object: Item;
+  CommentFormGroup: FormGroup;
+  commentList: any = [];
+  viewModeEnum = ViewMode;
+  cirtation = [];
+  /**
+   * This regex matches previous routes. The button is shown
+   * for matching paths and hidden in other cases.
+   */
+  previousRoute = /^(\/search|\/browse|\/collections|\/admin\/search|\/mydspace)/;
+
+  /**
+   * Used to show or hide the back to results button in the view.
+   */
+  showBackButton: Observable<boolean>;
+  bookmarkitem: any;
+  myrating: any;
+  avgrating:number=0;
+  /**
+   * Route to the item page
+   */
+  itemPageRoute: string;
+  CurrentViewMode = 'grid';
+  /**
+   * Enables the mirador component.
+   */
+  iiifEnabled: boolean;
+
+  /**
+   * Used to configure search in mirador.
+   */
+  iiifSearchEnabled: boolean;
+  @Output() changeViewMode: EventEmitter<ViewMode> = new EventEmitter<ViewMode>();
+  /**
+   * The query term from the previous dspace search.
+   */
+  loder: boolean = false;
+  iiifQuery$: Observable<string>;
+  accessStatus: string = "";
+  mediaViewer;
+  isAuthorized$: Observable<boolean> = of(false);
+  actindate: string = new Date().toString();
+  itemRD$: Observable<RemoteData<PaginatedList<Item>>>;
+  currentMode: ViewMode = ViewMode.ListElement;
+  paginationConfig: PaginationComponentOptions;
+  sortConfig: SortOptions;
+  currentPageSubscription: Subscription;
+  pageInfoState$: BehaviorSubject<PageInfo> = new BehaviorSubject<PageInfo>(undefined);
+  config: PaginationComponentOptions;
+  sortConfigComment: SortOptions;
+  pageId = 'tl';
+  cirteanselection : string;
+  breakingRating = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  comment$: BehaviorSubject<PaginatedList<Comment>> = new BehaviorSubject(buildPaginatedList<Comment>(new PageInfo(), []));
+  @Output() pageChange: EventEmitter<number> = new EventEmitter<number>();
+  @Output() pageSizeChange: EventEmitter<number> = new EventEmitter<number>();
+  private paginationChanges$: Subject<{
+    paginationConfig: PaginationComponentOptions,
+    sortConfig: SortOptions
+  }>;
+  constructor(public relationshipService: RelationshipDataService, public cdRef: ChangeDetectorRef, public sanitizer: DomSanitizer, protected routeService: RouteService,
+    protected router: Router, private accessStatusDataService: AccessStatusDataService, private commentDataService: CommentDataService,
+    private fb: FormBuilder,
+    private modalService: NgbModal,
+    public notificationsService: NotificationsService,
+    private paginationService: PaginationService,
+    public dsoNameService: DSONameService,
+    public searchService: SearchService,
+    private cds: CollectionDataService,
+    protected authorizationService: AuthorizationDataService,
+    protected bookmarkdataservice:BookmarkDataService,
+    private itemDataService : ItemDataService,
+    private chartService : ChartService,
+    private route: ActivatedRoute,
+    public searchConfigurationService: SearchConfigurationService,
+    @Inject(APP_CONFIG) public appConfig: AppConfig,
+  ) {
+    this.mediaViewer = environment.mediaViewer;
+    this.paginationConfig = Object.assign(new PaginationComponentOptions(), {
+      id: 'cp',
+      currentPage: 1,
+      pageSize: this.appConfig.browseBy.pageSize,
+    });
+
+    this.config = new PaginationComponentOptions();
+    this.config.id = this.pageId;
+    this.config.pageSize = 5;
+    this.config.currentPage = 1;
+    this.sortConfigComment = new SortOptions('dc.title', SortDirection.ASC);
+
+    this.sortConfig = new SortOptions('dc.date.accessioned', SortDirection.DESC);
+
+  }
+  
+  SearchRepo() { 
+   // debugger;
+    let author = this.object.firstMetadataValue("dc.title") != undefined ? this.object.allMetadataValues("dc.contributor.author").toString() : ""; 
+    let title = this.object.firstMetadataValue("dc.title") != undefined ? this.object.firstMetadataValue("dc.title")  : "";
+    let volume = this.object.firstMetadataValue("dc.volume") != undefined ? this.object.firstMetadataValue("dc.volume")+',' : "";
+    let issuenumber = this.object.firstMetadataValue("dc.isue.number") != undefined ? this.object.firstMetadataValue("dc.isue.number") + ',' : "";
+    let page = this.object.firstMetadataValue("dc.page") != undefined ? this.object.firstMetadataValue("dc.page") + ',' : "";
+    let publisher = this.object.firstMetadataValue("dc.organization") != undefined ? this.object.firstMetadataValue("dc.organization") + ',' : "";
+    let Date_of_Issue = this.object.firstMetadataValue("dc.date.issued") != undefined ? this.object.firstMetadataValue("dc.date.issued") : "";
+//     if (this.cirteanselection == "APA") {
+//       this.cirtation = author + ',(' + Date_of_Issue + '),"' + title + '"' + volume + '' + issuenumber + '' + page + '' + publisher+'.';
+//     } else if (this.cirteanselection == "Harvard") {
+//       this.cirtation = author + ',(' + Date_of_Issue + '),"' + title + '"' + volume + '' + issuenumber + '' + page + '' + publisher + '.';
+//     }
+//     else if (this.cirteanselection == "MLA") {
+//       this.cirtation = author + ',"' + title + '"' + "" + volume + "" + issuenumber + "" + page + "" + publisher + "" + Date_of_Issue;
+//       }
+//     else if (this.cirteanselection == "Vancouver") {
+//       this.cirtation = author + ',(' + Date_of_Issue + '),"' + title + '"' + volume + '' + issuenumber + '' + page + '' + publisher + '.';
+//     }
+//     else if (this.cirteanselection == "Chicago") {
+//       this.cirtation = author + ',(' + Date_of_Issue + ')"' + title + '"' + volume + "" + issuenumber + "" + page + "" + publisher + ".";
+//     } else if (this.cirteanselection == "IEEE") {
+//       this.cirtation = '[1]' + author + ',"' + title + '"' + "" + volume + "" + issuenumber + "" + page + "" + publisher + "" + Date_of_Issue;
+// }
+    
+    //console.log(this.cirteanselection)
+  }
+  copyInputMessage(inputElement: HTMLDivElement) {
+    const range = document.createRange();
+    range.selectNode(inputElement);
+  
+    const selection = window.getSelection();
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+  
+      document.execCommand('copy');
+  
+      // Clear the selection to prevent visual disruption
+      selection.removeAllRanges();
+    }
+  }
+  Citation(content) {
+    this.itemDataService.getCitetion(this.object.id).pipe().subscribe((data) => {
+     // debugger;
+      if(!!data && data.statusCode === 200 && !!data.payload) {
+        this.cirtation = Object.entries(data.payload);
+        console.log(this.cirtation);
+      }
+    });
+   
+    // let author = this.object.firstMetadataValue("dc.title") != undefined ? this.object.allMetadataValues("dc.contributor.author").toString() : "";
+    // let title = this.object.firstMetadataValue("dc.title") != undefined ? this.object.firstMetadataValue("dc.title") : "";
+    // let volume = this.object.firstMetadataValue("dc.volume") != undefined ? this.object.firstMetadataValue("dc.volume") + ',' : "";
+    // let issuenumber = this.object.firstMetadataValue("dc.isue.number") != undefined ? this.object.firstMetadataValue("dc.isue.number") + ',' : "";
+    // let page = this.object.firstMetadataValue("dc.page") != undefined ? this.object.firstMetadataValue("dc.page") + ',' : "";
+    // let publisher = this.object.firstMetadataValue("dc.organization") != undefined ? this.object.firstMetadataValue("dc.organization") + ',' : "";
+    // let Date_of_Issue = this.object.firstMetadataValue("dc.date.issued") != undefined ? this.object.firstMetadataValue("dc.date.issued") : "";
+    // if (this.cirteanselection == "APA") {
+    //   this.cirtation = author + ',(' + Date_of_Issue + '),"' + title + '"' + volume + '' + issuenumber + '' + page + '' + publisher + '.';
+    // } else if (this.cirteanselection == "Harvard") {
+    //   this.cirtation = author + ',(' + Date_of_Issue + '),"' + title + '"' + volume + '' + issuenumber + '' + page + '' + publisher + '.';
+    // }
+    // else if (this.cirteanselection == "MLA") {
+    //   this.cirtation = author + ',"' + title + '"' + "" + volume + "" + issuenumber + "" + page + "" + publisher + "" + Date_of_Issue;
+    // }
+    // else if (this.cirteanselection == "Vancouver") {
+    //   this.cirtation = author + ',(' + Date_of_Issue + '),"' + title + '"' + volume + '' + issuenumber + '' + page + '' + publisher + '.';
+    // }
+    // else if (this.cirteanselection == "Chicago") {
+    //   this.cirtation = author + ',(' + Date_of_Issue + ')"' + title + '"' + volume + "" + issuenumber + "" + page + "" + publisher + ".";
+    // } else if (this.cirteanselection == "IEEE") {
+    //   this.cirtation = '[1]' + author + ',"' + title + '"' + "" + volume + "" + issuenumber + "" + page + "" + publisher + "" + Date_of_Issue;
+    // }
+    this.modalService.open(content);
+  }
+  printPage() {
+    window.print();
+  }
+  getCommentList() {
+    this.loder = true;
+    if (hasValue(this.currentPageSubscription)) {
+      this.currentPageSubscription.unsubscribe();
+      this.paginationService.resetPage(this.config.id);
+    }
+
+    const pagination$ = this.paginationService.getCurrentPagination(this.config.id, this.config);
+    const sort$ = this.paginationService.getCurrentSort(this.config.id, this.sortConfigComment);
+    
+
+    this.currentPageSubscription = observableCombineLatest([pagination$, sort$]).pipe(
+      switchMap(([currentPagination, currentSort]) => {
+        return this.commentDataService.findCommentByItem(this.object.uuid, {
+          currentPage: currentPagination.currentPage,
+          elementsPerPage: currentPagination.pageSize,
+
+        },false);
+      }),
+      getAllSucceededRemoteData(),
+    ).subscribe((results) => {
+      this.loder = false;
+     // console.log("commented  list.......results.payload...",results.payload)
+      this.comment$.next(results.payload);
+      //this.counter = results.payload.pageInfo.elementsPerPage * (results.payload.pageInfo.currentPage - 1) + 1;
+      //this.items = results.payload.page;
+      // console.log(this.items[0].submitter.firstMetadataValue('eperson.firstname'))
+      this.pageInfoState$.next(results.payload.pageInfo);
+    });
+
+  }
+  onPageSizeChange(event) {
+    this.pageSizeChange.emit(event);
+  }
+  findBookMark() {
+   // console.log(this.bookmarkitem);
+    this.isAuthorized$.pipe(take(1)).subscribe((isautho: Boolean) => {
+      if (isautho) { 
+        this.bookmarkdataservice.findBookmarkByuserofItem(this.object.id).pipe(getFirstCompletedRemoteData()).subscribe((rd) => {
+          if (rd.hasSucceeded) {
+            this.bookmarkitem = rd.payload;
+           // this.cdRef.detectChanges();
+          }
+       })
+      
+      }
+    })
+    
+  }
+
+  findRating() {
+    this.isAuthorized$.pipe(take(1)).subscribe((isautho: Boolean) => {
+      if (isautho) {
+        this.commentDataService.findMyratingByuserofItem(this.object.id).pipe(getFirstCompletedRemoteData()).subscribe((rd) => {
+          if (rd.hasSucceeded) {
+           // console.log("rd.payload...MYra.", rd.payload)
+            this.myrating = rd.payload;
+            this.cdRef.detectChanges();
+          }
+        })
+       }
+    })
+    
+
+  }
+
+  findRatingBreaking():void {
+   
+   this.commentDataService.findratingBarkingofItem(this.object.id, null, false).pipe(getAllCompletedRemoteData()).subscribe((rd:any) => {
+      if (rd.hasSucceeded) {
+       // debugger;
+        this.breakingRating = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        // console.log("rd.payload..Breaking..", rd.payload.raitingmap)
+        // debugger;
+        
+        if (Object.keys(rd.payload.raitingmap).length != 0) {
+          Object.keys(rd.payload.raitingmap).forEach((key, index) => {
+            this.breakingRating[key] = rd.payload.raitingmap[key];
+            this.cdRef.detectChanges();
+            // console.log(key, rd.payload.raitingmap[key], index);
+          });
+        }
+         
+       
+   
+       // console.log(this.breakingRating);
+        
+      }
+    })
+  }
+  findAvgRating():void {
+   
+    this.commentDataService.findAvgratingByuserofItem(this.object.id, null, false).pipe(getFirstCompletedRemoteData()).subscribe((rd1: any) => {
+      if (rd1.state === 'Success') {
+        // console.log("insode mmmmmmmmmmmmm")
+        this.avgrating = parseInt(rd1.payload.ratingcount == null ? 0 : rd1.payload.ratingcount);
+        //console.log("rd.payload..AVG..", this.avgrating)
+        this.cdRef.detectChanges();
+      }
+    })
+  }
+  onPageChange(event) {
+    this.loder = true;
+    this.pageChange.emit(event);
+  }
+  getsafeURL(url): any {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.cdRef.detectChanges()
+  }
+  /**
+   * The function used to return to list from the item.
+   */
+  back = () => {
+    this.routeService.getPreviousUrl().pipe(
+      take(1)
+    ).subscribe(
+      (url => {
+        this.router.navigateByUrl(url);
+      })
+    );
+  };
+  createCommentFormGroup() {
+    this.CommentFormGroup = this.fb.group({
+      comments: ['', Validators.required],
+    });
+  }
+  flagComment(obj) { 
+   // console.log("old....", obj);
+    let commentToCreate = Object.assign(new Comment(), obj);
+    commentToCreate.status = 3;
+   //console.log("new....", commentToCreate)
+    this.commentDataService.put(commentToCreate).pipe(
+      getFirstCompletedRemoteData()
+    ).subscribe((rd: RemoteData<NoContent>) => {
+      if (rd.hasSucceeded) {
+       
+        this.getCommentList();
+        this.notificationsService.success('Flag comment successfully!');
+      } else {
+        this.notificationsService.error('An error occurred while flaging the comment! ');
+      }
+    })
+  }
+  savebookmark() {
+   
+    if (this.bookmarkitem != undefined && this.bookmarkitem.id) {
+      if (this.bookmarkitem.status === 'active') { 
+        this.bookmarkitem.status = 'dactive';
+      } else {
+        this.bookmarkitem.status = 'active'
+      }
+      this.bookmarkdataservice.put(this.bookmarkitem).pipe(
+        getFirstCompletedRemoteData()
+      ).subscribe((rd: RemoteData<Bookmark>) => { 
+        if (rd.hasSucceeded) {
+         // debugger;
+          this.bookmarkitem = rd.payload;
+          //this.CommentFormGroup.reset();
+          //this.getCommentList();
+          this.cdRef.detectChanges();
+          if (this.bookmarkitem.status === 'active') {
+            this.notificationsService.success('Bookmark this item  successfully!');
+          } else {
+            this.notificationsService.success('UnBookmark this item  successfully!');
+          }
+          
+        } else {
+          this.notificationsService.error('An error occurred while Bookmarking this item! ');
+        }
+      })
+    } else {
+     let data = {
+        "itemRest": {
+          "uuid": this.object.uuid
+        }
+      };
+      const bookmarkToCreate = Object.assign(new Bookmark(), data);
+      this.bookmarkdataservice.create(bookmarkToCreate).pipe(
+        getFirstCompletedRemoteData()
+      ).subscribe((rd: RemoteData<Bookmark>) => {
+
+        if (rd.hasSucceeded) {
+         // debugger;
+          this.bookmarkitem = rd.payload;
+          //this.CommentFormGroup.reset();
+          //this.getCommentList();
+          this.cdRef.detectChanges();
+          this.notificationsService.success('Bookmark this item  successfully!');
+        } else {
+          this.notificationsService.error('An error occurred while Bookmarking this item! ');
+        }
+      })
+    }
+    
+
+  }
+  savecomment() {
+    this.isAuthorized$.pipe(take(1)).subscribe((isautho: Boolean)=>{
+      if (isautho) {
+        let data = {
+          "commenttype": 1,
+          "comment": this.CommentFormGroup.value.comments,
+          "itemRest": {
+            "uuid": this.object.uuid
+          }
+        };
+        const commentToCreate = Object.assign(new Comment(), data);
+        this.commentDataService.create(commentToCreate).pipe(
+          getFirstCompletedRemoteData()
+        ).subscribe((rd: RemoteData<NoContent>) => {
+
+          if (rd.hasSucceeded) {
+            this.CommentFormGroup.reset();
+            this.getCommentList();
+            this.notificationsService.success('Comment added successfully!');
+          } else {
+            this.notificationsService.error('An error occurred while adding the comment! ');
+          }
+        })
+      } else {
+        this.notificationsService.warning('You are not logged in! ');
+      }
+      
+    })
+  
+  }
+
+  saveRating(ratingcount) {
+    this.isAuthorized$.pipe(take(1)).subscribe((isautho: Boolean) => {
+      if (isautho) {
+        if (this.myrating != undefined && this.myrating.id) {
+          this.myrating.ratingcount = ratingcount;
+          delete this.myrating.submitterRest;
+          delete this.myrating.itemRest;
+
+         
+          this.commentDataService.put(this.myrating).pipe(
+            getFirstCompletedRemoteData()
+          ).subscribe((rd: RemoteData<Comment>) => {
+            if (rd.hasSucceeded) {
+              this.myrating = rd.payload;
+              this.findAvgRating();
+              this.findRatingBreaking();
+               this.cdRef.detectChanges();
+              this.notificationsService.success('Thanks for rating this item! We are updating records.!');
+            } else {
+              this.notificationsService.error('An error occurred while rating the item! ');
+            }
+          })
+        } else {
+          let data = {
+            "commenttype": 2,
+            "ratingcount": ratingcount,
+            "itemRest": {
+              "uuid": this.object.uuid
+            }
+          };
+
+          const commentToCreate = Object.assign(new Comment(), data);
+          this.commentDataService.create(commentToCreate).pipe(
+            getFirstCompletedRemoteData()
+          ).subscribe((rd: RemoteData<Comment>) => {
+            if (rd.hasSucceeded) {
+              this.myrating = rd.payload;
+              this.findAvgRating();
+              this.findRatingBreaking();
+              this.cdRef.detectChanges();
+              this.notificationsService.success('Thanks for rating this item! We are updating records.!');
+            } else {
+              this.notificationsService.error('An error occurred while rating the item! ');
+            }
+          })
+        }
+        
+      } else {
+        this.notificationsService.warning('You are not logged in! ');
+       }
+    })
+   
+  }
+  getwidthRating(brestart, ratingcount) {
+    if (Number.isNaN((100 * brestart) /ratingcount)) {
+      //console.log('ifffffff')
+      return '0px';
+    } else {
+      return ((100 * brestart) / ratingcount) + '%';
+   }
+   
+  }
+
+
+  
+  ngOnInit(): void {
+    this.cirteanselection = "RefMan";
+    this.isAuthorized$ = this.authorizationService.isAuthorized(FeatureID.CanEditItem, this.object.self);
+    this.createCommentFormGroup();
+    // if (this.object.accessStatus == null) {
+    //   this.object.accessStatus = this.accessStatusDataService.findAccessStatusFor(this.object);
+    //   this.object.accessStatus.pipe(getRemoteDataPayload()).subscribe((accesstype: any) => {
+    //     this.accessStatus = accesstype.status;
+    //   })
+    // }
+   this.getCommentList();
+    this.itemPageRoute = getItemPageRoute(this.object);
+    // hide/show the back button
+    this.findBookMark();
+    this.findRating();
+    this.findAvgRating();
+    this.findRatingBreaking();
+    this.showBackButton = this.routeService.getPreviousUrl().pipe(
+      filter(url => this.previousRoute.test(url)),
+      take(1),
+      map(() => true)
+    );
+    // check to see if iiif viewer is required.
+    this.iiifEnabled = isIiifEnabled(this.object);
+    this.iiifSearchEnabled = isIiifSearchEnabled(this.object);
+    if (this.iiifSearchEnabled) {
+      this.iiifQuery$ = getDSpaceQuery(this.object, this.routeService);
+    }
+
+
+    this.paginationChanges$ = new BehaviorSubject({
+      paginationConfig: this.paginationConfig,
+      sortConfig: this.sortConfig
+    });
+
+    const currentPagination$ = this.paginationService.getCurrentPagination(this.paginationConfig.id, this.paginationConfig);
+    const currentSort$ = this.paginationService.getCurrentSort(this.paginationConfig.id, this.sortConfig);
+    this.cds.findOwningCollectionFor(this.object).pipe(
+      getFirstSucceededRemoteDataPayload()).subscribe((rd: Collection) => {
+        this.itemRD$ = observableCombineLatest([currentPagination$, currentSort$]).pipe(
+          switchMap(([currentPagination, currentSort]) => {
+            return this.searchService.search<Item>(
+              new PaginatedSearchOptions({
+                scope: rd.uuid,
+                pagination: currentPagination,
+                sort: currentSort,
+                dsoTypes: [DSpaceObjectType.ITEM]
+              }), null, true, true, ...BROWSE_LINKS_TO_FOLLOW)
+              .pipe(toDSpaceObjectListRD()) as Observable<RemoteData<PaginatedList<Item>>>;
+          }
+          )
+        );
+      })
+      this.updateMap();
+      this.loadData();
+
+
+  }
+  isLoading: boolean = false;
+  collectionorCommunityId:string;
+  dateType:number = 0;
+  chartOptions:any=[];
+  isLoading2:boolean = false;
+  plotsData:any;
+  areaData:any;
+  
+  loadData() {
+    this.isLoading = true;
+    let id:string;
+    this.route.paramMap.subscribe(params => {
+      id = params.get('id'); // 'id' matches the route parameter name
+      console.log('Route ID:', id);
+    });
+    const colstring = '/getItemAnalytics?dateType=' + this.dateType + '&top=10&collectionorcommunityid=' + id+ '&type=item';
+    this.chartService.findAllByGeolocation(colstring).pipe().subscribe((data) => {
+      this.cdRef.detectChanges();
+      if (data) {
+        this.chartOptions = data;
+        console.log(data);
+        this.isLoading = false;
+      }
+    });
+    const colstring1 = '/getTopViewDownloadserchMap?dateType=' + this.dateType + '&top=10&collectionorcommunityid=' + id+ '&type=item';
+    this.chartService.findAllByGeolocation(colstring1).pipe().subscribe((data) => {
+      if (data) {
+        this.plotsData = data;
+        console.log(this.plotsData);
+        this.isLoading2 = false;
+        this.cdRef.detectChanges();
+        this.checkAndUpdateMap()
+        
+      } else {
+        this.isLoading2 = false;
+        this.cdRef.detectChanges();
+      }
+    });
+    const colstring2 = '/getTopViewDownloadserchMapArea?dateType=' + this.dateType + '&top=10&collectionorcommunityid=' + id+ '&type=item';
+    this.chartService.findAllByGeolocation(colstring2).pipe().subscribe((data) => {
+      this.isLoading = false;
+      this.cdRef.detectChanges();
+      if (data) {
+        this.areaData = data;
+      }
+    });
+  }
+  buttonClick(j) {
+    this.dateType = j;
+    this.loadData();
+  }
+
+  checkAndUpdateMap() {
+    if (this.areaData && this.plotsData) {
+      this.updateMap(); // Only update the map when both data sources are ready
+    }
+  }
+
+  updateMap() {
+    setTimeout(() => {
+      $('#ItemAnalyticsMap').mapael({
+        map: {
+          name: 'world_countries',
+          zoom: {
+            enabled: true,
+            maxLevel: 10
+          },
+          defaultArea: {
+            attrs: {
+              fill: "#ced8d0",
+              stroke: "#ced8d0"
+            }
+          }
+        },
+        legend: {
+          area: {
+            mode: "horizontal",
+            slices: [
+              {
+                label: "< 100 Views",
+                max: 100,
+                attrs: {
+                  fill: "#F9BFA9"
+                }
+              },
+              {
+                label: "100 - 500 Views",
+                min: 101,
+                max: 500,
+                attrs: {
+                  fill: "#F69F7E"
+                }
+              },
+              {
+                label: "500 - 1000 Views",
+                min: 501,
+                max:1000,
+                attrs: {
+                  fill: "#F37F51"
+                }
+              },
+              {
+                label: "> 1000 Views",
+                min: 1001,
+                attrs: {
+                  fill: "#F05A25"
+                }
+              }
+            ]
+          }
+        },
+        areas: this.areaData,
+        plots: this.plotsData
+      });
+    }, 1000); // Slight delay to ensure data is ready
+  }
+
+  ngOnDestroy(): void {
+    this.paginationService.clearPagination(this.paginationConfig.id);
+  }
+
+  dowloadFile() {
+    let URL =this.itemDataService.downloadCitetion(this.object.id,this.cirteanselection);
+    const link = document.createElement('a');
+    link.href = URL;
+    link.download = URL;
+    link.click()
+  }
+}

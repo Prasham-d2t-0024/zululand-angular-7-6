@@ -1,0 +1,15 @@
+<div class="container-fluid pr-0" [ngClass]="{'pl-22px':(increaseSideBarPadding && (adjustLayout$ | async)), 'pl-0':(isXsOrSm$ | async)}">
+  <div class="row" [ngClass]="{'m-0 pl-3': (isMd$ | async)}">
+    <div class="row-with-sidebar row-offcanvas row-offcanvas-left"
+         [@pushInOut]="(isSidebarCollapsed$ | async) ? 'collapsed' : 'expanded'">
+      <div id="{{id}}-sidebar-content"
+           class="col-12 col-md-{{sideBarWidth}} sidebar-content {{sidebarClasses | async}}" 
+           [ngClass]="(isXsOrSm$ | async) ? 'p-5' : 'pl-3 pb-3 pr-3 pt-0 mt-1'">
+        <ng-container *ngTemplateOutlet="sidebarContent"></ng-container>
+      </div>
+      <div class="col-12 col-md-{{12 - sideBarWidth}}">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+</div>

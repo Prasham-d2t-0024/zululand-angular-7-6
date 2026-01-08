@@ -1,0 +1,3 @@
+<div class="mt-4 search-page">
+  <ds-themed-search [showCsvExport]="true" [trackStatistics]="true"></ds-themed-search>
+</div>

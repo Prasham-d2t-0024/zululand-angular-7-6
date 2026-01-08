@@ -1,0 +1,378 @@
+import { AfterViewInit, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { th } from 'date-fns/locale';
+import { map, Observable, take } from 'rxjs';
+import { AuthService } from 'src/app/core/auth/auth.service';
+import { AuthorizationDataService } from 'src/app/core/data/feature-authorization/authorization-data.service';
+import { FeatureID } from 'src/app/core/data/feature-authorization/feature-id';
+import { FindListOptions } from 'src/app/core/data/find-list-options.model';
+import { ChartService } from 'src/app/core/shared/trending-charts/chart.service';
+import { URLCombiner } from 'src/app/core/url-combiner/url-combiner';
+import { hasValue } from 'src/app/shared/empty.util';
+declare var $: any;
+
+@Component({
+  selector: 'ds-home-treding-searches',
+  templateUrl: './home-treding-searches.component.html',
+  styleUrls: ['./home-treding-searches.component.scss']
+})
+export class HomeTredingSearchesComponent implements OnInit ,AfterViewInit {
+  @Input() collectionorCommunityId;
+  @Input() type;
+  view: any[] = [450, 150];
+  barView: any[] = [650, 450];
+  chartOptions: any = [
+    {
+      "name": "Sri Lanka",
+      "series": [
+        {
+          "value": 4,
+          "name": "2016-09-18"
+        },
+        {
+          "value": 7,
+          "name": "2016-09-20"
+        },
+        {
+          "value": 3,
+          "name": "2016-09-16"
+        },
+        {
+          "value": 5,
+          "name": "2016-09-19"
+        },
+        {
+          "value": 7,
+          "name": "2016-09-24"
+        }
+      ]
+    }
+  ];
+  barChart: any = [];
+  timeline: boolean = true;
+  data: any = [];
+  i: number = 0;
+  config: FindListOptions = Object.assign(new FindListOptions(), {
+    elementsPerPage: 10
+  });
+  colorScheme = 'air';
+  colorScheme1 = {
+    domain: ['#003D6E'],
+  };
+
+  public isCollapsed = true;
+  tableData = [
+    { countryName: 'India', views: '1271', download: '338', search: '386' },
+  ]
+  subtableData: any;
+  isLoading:boolean =false;
+  isLoading1:boolean =false;
+  isLoading2:boolean =false;
+  plotsData:any;
+  areaData:any;
+  totalHits:any;
+  searchType: string = 'All Searches';
+  isAdmin$: Observable<boolean>;
+  constructor(public chartService: ChartService,
+    public cdRef:ChangeDetectorRef,
+    protected authorizationService: AuthorizationDataService,
+    private authService: AuthService,
+  ) {}
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      $('#mapContainer').mapael({
+        map: {
+          name: 'world_countries',
+          zoom: {
+            enabled: true,
+            maxLevel: 10
+          },
+          defaultArea: {
+            attrs: {
+              fill: "#ced8d0",
+              stroke: "#ced8d0"
+            }
+          }
+        },
+        legend: {
+          area: {
+            mode: "horizontal",
+            slices: [
+              {
+                label: "< 100 Views",
+                max: 100,
+                attrs: {
+                  fill: "#F9BFA9"
+                }
+              },
+              {
+                label: "100 - 500 Views",
+                min: 101,
+                max: 500,
+                attrs: {
+                  fill: "#F69F7E"
+                }
+              },
+              {
+                label: "500 - 1000 Views",
+                min: 501,
+                max:1000,
+                attrs: {
+                  fill: "#F37F51"
+                }
+              },
+              {
+                label: "> 1000 Views",
+                min: 1001,
+                attrs: {
+                  fill: "#003D6E"
+                }
+              }
+            ]
+          }
+        },
+        plots: this.plotsData,
+        areas: this.areaData
+      });
+    }, 1000);
+  }
+
+  ngOnInit(): void {
+    this.isAdmin$ = this.authorizationService.isAuthorized(FeatureID.AdministratorOf);
+    this.loadData();
+  }
+  loadData() {
+    this.isLoading =true;
+    const call1 = this.collectionorCommunityId ? '/getTrendingSearches?dateType=' + this.i + '&top=10&collectionorcommunityid='+this.collectionorCommunityId+ '&type='+this.type : '/getTrendingSearches?dateType=' + this.i + '&top=10'
+    this.chartService.findAllByGeolocation(call1).pipe().subscribe((data) => {
+      if(data) {
+        this.barChart = data;
+        this.isLoading = false;
+        this.cdRef.detectChanges();
+      } else {
+        this.isLoading = false;
+        this.cdRef.detectChanges();
+      }
+    });
+    this.isLoading1 = true;
+    const call2 = this.collectionorCommunityId ? '/getTrendingSearchesLinechart?dateType=' + this.i + '&top=10&collectionorcommunityid='+this.collectionorCommunityId+ '&type='+this.type : '/getTrendingSearchesLinechart?dateType=' + this.i + '&top=10';
+    this.chartService.findAllByGeolocation(call2).pipe().subscribe((data) => {
+      
+      if (data && data['series'] && Array.isArray(data['series'])) {
+        // Group by date and sum values if needed, or keep each date entry as-is.
+        const uniqueSeries = [];
+        this.chartOptions = [];
+        data['series'].forEach((entry) => {
+          // Find if the date already exists in the uniqueSeries array
+          const existingEntry = uniqueSeries.find(e => e.name === entry.name);
+    
+          if (existingEntry) {
+            // If it exists, add the value (convert to number for addition)
+            existingEntry.value += Number(entry.value);
+          } else {
+            // If it doesn't exist, add a new entry with date and value
+            uniqueSeries.push({
+              name: entry.name,
+              value: Number(entry.value)
+            });
+          }
+        });
+    
+        // Assign the transformed data to chartOptions in the required format
+        this.chartOptions = uniqueSeries;
+        this.isLoading1 = false;
+        this.cdRef.detectChanges();
+        // this.chartOptions = [
+        //   {
+        //     name: data['name'],
+        //     series: uniqueSeries
+        //   }
+        // ];
+      } else {
+        this.chartOptions = [];
+        this.cdRef.detectChanges();
+      }
+    });
+    this.isLoading2 = true;
+    const call3 = this.collectionorCommunityId ? '/getTrandingSearchMap?dateType=' + this.i + '&top=10&collectionorcommunityid='+this.collectionorCommunityId + '&type='+this.type : '/getTrandingSearchMap?dateType=' + this.i + '&top=10';
+    this.chartService.findAllByGeolocation(call3).pipe().subscribe((data) => {
+      this.isLoading2 = false;
+      this.cdRef.detectChanges();
+      if (data) {
+        this.plotsData = data;
+        this.updateMap();
+      }
+    });
+    const call5 = this.collectionorCommunityId ? '/getTrandingserchMapArea?dateType=' + this.i + '&top=10&collectionorcommunityid='+this.collectionorCommunityId+ '&type='+this.type : '/getTrandingserchMapArea?dateType=' + this.i + '&top=10';
+    this.chartService.findAllByGeolocation(call5).pipe().subscribe((data) => {
+      this.isLoading2 = false;
+      this.cdRef.detectChanges();
+      if (data) {
+        this.areaData = data;
+        this.updateMap();
+      }
+    });
+    const call4 = this.collectionorCommunityId ? '/getTrandingSearchHites?dateType=' + this.i + '&top=10&collectionorcommunityid='+this.collectionorCommunityId+ '&type='+this.type : '/getTrandingSearchHites?dateType=' + this.i + '&top=10';
+    this.chartService.findAllByGeolocation(call4).pipe().subscribe((data) => {
+      this.isLoading2 = false;
+      this.cdRef.detectChanges();
+      if (data) {
+        this.totalHits = data['totalhits'];
+      }
+    });
+
+  }
+
+  buttonClick(j: number) {
+    this.i = j;
+    this.searchType= 'All Searches';
+    this.loadData();
+  }
+
+  updateMap() {
+    setTimeout(() => {
+      $('#mapContainer').mapael({
+        map: {
+          name: 'world_countries',
+          zoom: {
+            enabled: true,
+            maxLevel: 10
+          },
+          defaultArea: {
+            attrs: {
+              fill: "#ced8d0",
+              stroke: "#ced8d0"
+            }
+          }
+        },
+        legend: {
+          area: {
+            mode: "horizontal",
+            slices: [
+              {
+                label: "< 100 Views",
+                max: 100,
+                attrs: {
+                  fill: "#F9BFA9"
+                }
+              },
+              {
+                label: "100 - 500 Views",
+                min: 101,
+                max: 500,
+                attrs: {
+                  fill: "#F69F7E"
+                }
+              },
+              {
+                label: "500 - 1000 Views",
+                min: 501,
+                max:1000,
+                attrs: {
+                  fill: "#F37F51"
+                }
+              },
+              {
+                label: "> 1000 Views",
+                min: 1001,
+                attrs: {
+                  fill: "#003D6E"
+                }
+              }
+            ]
+          }
+        },
+        plots: this.plotsData,
+        areas: this.areaData
+      });
+    }, 1000);
+  }
+
+  onDataPointHover(event:any) {
+    console.log(event);
+    if(event.name !== 'All Searches') {
+      this.searchType = event.name;
+      this.isLoading1 = true;
+      const call2 = this.collectionorCommunityId ? '/getTrendingSearchesLinechart?dateType=' + this.i + '&top=10&collectionorcommunityid='+this.collectionorCommunityId+ '&type='+this.type+'&title='+event.name : '/getTrendingSearchesLinechart?dateType=' + this.i + '&top=10&title='+event.name;
+      this.chartService.findAllByGeolocation(call2).pipe().subscribe((data) => {
+        this.isLoading1 = false;
+        this.cdRef.detectChanges();
+  
+        if (data && data['series'] && Array.isArray(data['series'])) {
+          // Group by date and sum values if needed, or keep each date entry as-is.
+          const uniqueSeries = [];
+          this.chartOptions = [];
+          data['series'].forEach((entry) => {
+            // Find if the date already exists in the uniqueSeries array
+            const existingEntry = uniqueSeries.find(e => e.name === entry.name);
+      
+            if (existingEntry) {
+              // If it exists, add the value (convert to number for addition)
+              existingEntry.value += Number(entry.value);
+            } else {
+              // If it doesn't exist, add a new entry with date and value
+              uniqueSeries.push({
+                name: entry.name,
+                value: Number(entry.value)
+              });
+            }
+          });
+      
+          // Assign the transformed data to chartOptions in the required format
+          this.chartOptions = uniqueSeries;
+          // this.chartOptions = [
+          //   {
+          //     name: data['name'],
+          //     series: uniqueSeries
+          //   }
+          // ];
+        } else {
+          console.error("Data is not in the expected format:", data);
+          this.chartOptions = [];
+        }
+      });
+      this.isLoading2 = true;
+      const call3 = this.collectionorCommunityId ? '/getTrandingSearchMap?dateType=' + this.i + '&top=10&collectionorcommunityid='+this.collectionorCommunityId+ '&type='+this.type+'&title='+event.name : '/getTrandingSearchMap?dateType=' + this.i + '&top=10&title='+event.name;
+      this.chartService.findAllByGeolocation(call3).pipe().subscribe((data) => {
+        this.isLoading2 = false;
+        this.cdRef.detectChanges();
+        if (data) {
+          this.plotsData = data;
+          this.updateMap();
+        }
+      });
+      const call5 = this.collectionorCommunityId ? '/getTrandingserchMapArea?dateType=' + this.i + '&top=10&collectionorcommunityid='+this.collectionorCommunityId + '&title='+event.name+ '&type='+this.type : '/getTrandingserchMapArea?dateType=' + this.i + '&top=10&title='+event.name;
+      this.chartService.findAllByGeolocation(call5).pipe().subscribe((data) => {
+        this.isLoading2 = false;
+        this.cdRef.detectChanges();
+        if (data) {
+          this.areaData = data;
+          this.updateMap();
+        }
+      });
+      const call4 = this.collectionorCommunityId ? '/getTrandingSearchHites?dateType=' + this.i + '&top=10&collectionorcommunityid='+this.collectionorCommunityId+'&title='+event.name+ '&type='+this.type : '/getTrandingSearchHites?dateType=' + this.i + '&top=10&title='+event.name;
+      this.chartService.findAllByGeolocation(call4).pipe().subscribe((data) => {
+        this.isLoading2 = false;
+        this.cdRef.detectChanges();
+        if (data) {
+          this.totalHits = data['totalhits'];
+        }
+      });
+    } else {
+      this.buttonClick(this.i);
+    }
+  }
+
+  downloadExcel() {
+    const URL = this.collectionorCommunityId ? '/report/downloadTrandingMatricxsearch?dateType=' + this.i+`&collectionorcommunityid=${this.collectionorCommunityId}`+ '&type='+this.type : '/report/downloadTrandingMatricxsearch?dateType=' + this.i
+      this.chartService.downloadZIP().pipe().subscribe((data: any) => {
+        this.authService.getShortlivedToken().pipe(take(1), map((token) =>
+          hasValue(token) ? new URLCombiner(data + URL, `&authentication-token=${token}`).toString() : data + URL)).subscribe((logs: string) => {
+            window.open(logs);
+          });
+      },
+        (error) => {
+          console.error('Error downloading the ZIP file', error);
+        })
+    }
+
+}

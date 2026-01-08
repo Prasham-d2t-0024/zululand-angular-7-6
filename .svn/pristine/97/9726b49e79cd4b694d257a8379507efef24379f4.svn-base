@@ -1,0 +1,17 @@
+<div class="container">
+    <div class="form-group">
+        <label>About Us</label>
+        <!-- <textarea class="form-control" row="5" [(ngModel)]="typedValue"></textarea> -->
+        <angular-editor class="editor" [config]="editorConfig" [(ngModel)]="typedValue" (ngModelChange)="saveTypedValue($event)"></angular-editor>
+        <div  class="invalid-feedback">
+            <div>* is required</div>
+        </div>
+    </div>
+    <button class="float-right mr-3 btn btn-primary" (click)="submit()">Submit</button>
+</div>
+
+<style>
+    .angular-editor .angular-editor-wrapper .angular-editor-textarea{
+    background-color: white !important;
+}
+</style>

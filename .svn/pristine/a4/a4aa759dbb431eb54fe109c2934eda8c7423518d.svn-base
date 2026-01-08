@@ -1,0 +1,1426 @@
+<ds-themed-results-back-button *ngIf="showBackButton | async" [back]="back"></ds-themed-results-back-button>
+<div class="container item-detail-page">
+  <div class="row" *ngIf="iiifEnabled">
+    <div class="col-12">
+      <ds-mirador-viewer id="iiif-viewer" [object]="object" [searchable]="iiifSearchEnabled"
+        [query]="iiifQuery$ | async">
+      </ds-mirador-viewer>
+    </div>
+  </div>
+  <div class="row boxshadow bg-light-background border itemdetail-image " style="background-color: #f8f8f8 !important;">
+    <div class="col-xs-12 col-md-2 py-3">
+      <ng-container *ngIf="!(mediaViewer.image || mediaViewer.video)">
+        <ds-metadata-field-wrapper [hideIfNoTextContent]="false">
+          <ds-themed-thumbnail [thumbnail]="object?.thumbnail | async"
+            [defaultImage]="'assets/images/item.jpg'"></ds-themed-thumbnail>
+        </ds-metadata-field-wrapper>
+      </ng-container>
+    </div>
+    <div class="col-xs-12 col-md-10 py-3">      
+      <div class="w-100 d-flex justify-content-between">
+        <p class="h6 badge badge-primary  mb-2" *ngIf="object.firstMetadataValue('dc.type')">{{
+          object.firstMetadataValue('dc.type') | translate }}
+        </p>
+        <ds-dso-edit-menu></ds-dso-edit-menu>
+      </div>
+
+      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.title')">
+        <h4 class="ellipsify-vertical line-3 item-page-title-field text-secondary">
+          <span class="dont-break-out">
+            {{object.firstMetadataValue('dc.title')}}
+          </span>
+        </h4>
+      </div>
+
+      <div class="col-lg-12 mb-2 p-0" *ngIf="departmentList.length>0">
+        <span class="text-secondary h6">{{'relationships.isAuthorOf' | translate}}: </span>      
+        <span class="list-unstyled">
+          <span *ngFor="let author of authors; let last = last;">
+            <a class="item-page-link-color" [routerLink]="['/browse/author']" [queryParams]="{'searchWith':author}">
+              <span>{{author}}</span>
+            </a>
+            <span *ngIf="!last || departmentList.length">; </span>
+          </span>
+          <span *ngFor="let sec of departmentList; let last = last;">
+            <a class="item-page-link-color" [routerLink]="['/entities/person/', sec.id]">
+              <span>{{sec.firstMetadataValue('person.familyName')}}, {{sec.firstMetadataValue('person.givenName')}}</span>
+            </a>
+            <span *ngIf="!last">; </span>
+          </span>
+        </span>
+      </div>
+
+      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.author.affiliation')">
+        <span class="text-secondary h6">{{'untypeitem.metadata.author_affiliation' | translate}}: </span>
+        <span>{{object.firstMetadataValue('dc.author.affiliation')}}</span>
+      </div>
+
+      <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.contributor.advisor')">
+        <span class="text-secondary h6">{{'untypeitem.metadata.advisor' | translate}}: </span>
+        <ng-container *ngFor="let advisor of object.allMetadataValues('dc.contributor.advisor'); let last = last;">
+          <a class="item-page-link-color" *ngIf="advisor.split('[').length==2" [href]="getAdvisorlink(advisor)" target="_blank">{{advisor.split("[")[0]}}</a>
+          <span *ngIf="advisor.split('[').length==1">{{advisor}}</span>
+          <span *ngIf="!last">; </span>
+        </ng-container>
+      </div>
+
+      <!-- <ds-themed-metadata-representation-list [parentItem]="object" [itemType]="'OrgUnit'"
+        [metadataFields]="['dc.departmentName','dc.contributor.other']" [label]="'project.page.department' | translate">
+      </ds-themed-metadata-representation-list> -->
+
+      <div class="col-lg-12 mt-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.creator.researcher')">
+        <span class="text-secondary h6">{{'untypeitem.metadata.researcher' | translate}}: </span>
+        <p class="slash text-black">{{object.firstMetadataValue('dc.creator.researcher')}}</p>
+      </div>
+
+      <div class="col-lg-12 mt-2 p-0" *ngIf="object.firstMetadataValue('dc.subject')">
+        <span class="text-secondary h6">{{'untypeitem.metadata.keywords' | translate}}: </span>
+        <ng-container *ngFor="let subject of object.allMetadataValues('dc.subject'); let last = last;">
+          <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.subject':subject+',equals'}"><span
+              class="badge badge-secondary">{{subject}}</span></a>
+          <span *ngIf="!last">&nbsp;</span>
+        </ng-container>
+      </div>
+
+      <div class="col-lg-12 mt-2 p-0" *ngIf="object.firstMetadataValue('dc.location')">
+        <span class="font-weight-bold h6">Location: </span>
+        <ng-container *ngFor="let subject of object.allMetadataValues('dc.location'); let last = last;">
+          <a class="h6 item-page-link-color" [routerLink]="['/search']" [queryParams]="{'f.location':subject+',equals'}"><span
+              class="badge badge-secondary">{{subject}}</span></a>
+          <span *ngIf="!last">; </span>
+        </ng-container>
+      </div>
+
+      <div class="col-lg-12 mt-2 p-0" *ngIf="object.firstMetadataValue('dc.location.library')">
+        <span class="font-weight-bold h6">Library location: </span>
+        <ng-container *ngFor="let subject of object.allMetadataValues('dc.location.library'); let last = last;">
+          <a class="h6 item-page-link-color" [routerLink]="['/search']" [queryParams]="{'f.loclib':subject+',equals'}"><span
+              class="badge badge-secondary">{{subject}}</span></a>
+          <span *ngIf="!last">; </span>
+        </ng-container>
+      </div>      
+      <div class="col-lg-12 mt-2 mt-2 p-0" *ngIf="object.firstMetadataValue('dc.faculty')">
+        <span class="text-secondary h6">{{'untypeitem.metadata.faculty' | translate}}: </span>
+        <ng-container *ngFor="let faculty of object.allMetadataValues('dc.faculty'); let last = last;">
+          <a class="item-page-link-color" [routerLink]="['/search']" [queryParams]="{'f.faculty':faculty+',equals'}">{{faculty}}</a>
+          <span *ngIf="!last">; </span>
+        </ng-container>
+      </div>
+
+    </div>
+    <div class="container-fluid itemdetail-footer-actions">
+      <div class="row text-secondary  action-row">
+        <div class="col-12 col-md-6 footeractions-left">
+          <div class="d-flex flex-wrap flex-md-nowrap flex-action">
+            <div class="col-6 col-md-3 border-right text-center">
+              <span>
+                <i class="fa fa-lg fa-eye mr-1" aria-hidden="true"></i>
+                <span>Views</span>
+              </span>
+              <p>{{object.viewcount}}</p>
+            </div>
+            <div class="col-6 col-md-3 border-right text-center">
+              <span>
+                <i class="fa fa-lg fa-download mr-1" aria-hidden="true"></i>
+                <span>Downloads</span>
+              </span>
+              <p>{{object.download}}</p>
+            </div>
+            <div class="col-6 col-md-3 border-right text-center">
+              <div class="nav-item dropdown" ngbDropdown>
+                <a class="p-0 nav-link dropdown-toggle" id="navbarScrollingDropdown" role="button"
+                  data-bs-toggle="dropdown" aria-expanded="false" ngbDropdownToggle>
+                  <i class="fa fa-lg fa-star mr-1" aria-hidden="true"> </i> Rating
+                </a>
+                <div class="container " style="min-width: 352px;" ngbDropdownMenu
+                  aria-labelledby="navbarScrollingDropdown">
+                  <div class="row  border-bottom text-center m-0 p-2">
+                    <div class="col-6  border-right ">
+                      <div class="text-muted ">Your Rating</div>
+                      <div class="ratingSectionNum">
+                        <span class="font-weight-bold h5">
+                          <span *ngIf="!(isAuthorized$ | async)">N</span>
+                          <!-- <span *ngIf="(isAuthorized$ | async)">N</span> -->
+                          <span *ngIf="(isAuthorized$ | async) && myrating">{{myrating.ratingcount=== 0 ?
+                            'N':myrating.ratingcount }}</span>
+                        </span>
+                        <span class="ratedDivider">/</span>
+                        <span class="h6">
+                          <span *ngIf="!(isAuthorized$ | async)">A</span>
+                          <span *ngIf="(isAuthorized$ | async) && myrating">{{ myrating.ratingcount === 0 ? 'A': 5
+                            }}</span>
+                          <!-- <span *ngIf="(isAuthorized$ | async)">A</span> -->
+                        </span>
+                      </div>
+                      <div class="ratingSectionStars">
+                        <div class="smallfix yourratingdiv">
+                          <ng-container *ngIf="!myrating">
+                            <span *ngFor="let item of[].constructor(5)">
+                              <i class="far fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+                            </span>
+                          </ng-container>
+                          <ng-container *ngIf="myrating">
+                            <span *ngFor="let item of[].constructor(myrating.ratingcount)">
+                              <i class="fa fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+
+                            </span>
+                            <span *ngFor="let item of[].constructor(5-myrating.ratingcount)">
+                              <i class="far fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+                            </span>
+                          </ng-container>
+
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="text-muted">Avg. Rating</div>
+                      <div class="ratingSectionNum">
+                        <span class="font-weight-bold h5">{{ avgrating }}</span>
+                        <!-- <span class="font-weight-bold h5">0</span> -->
+                        <span class="ratedDivider">/</span><span class="h6">5</span>
+                      </div>
+                      <div class="ratingSectionStars">
+                        <div class="smallfix yourratingdiv">
+                          <!-- <i class="far fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+                      <i class="far fa-sm fa-star  ml-1" aria-hidden="true"> </i>
+                      <i class="far fa-sm fa-star  ml-1" aria-hidden="true"> </i>
+                      <i class="far fa-sm fa-star  ml-1" aria-hidden="true"> </i>
+                      <i class="far fa-sm fa-star ml-1" aria-hidden="true"> </i> -->
+
+
+                          <span *ngFor="let item of[].constructor(avgrating)">
+                            <i class="fa fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+
+                          </span>
+                          <span *ngFor="let item of[].constructor(5-avgrating)">
+                            <i class="far fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+                          </span>
+                        </div>
+                      </div>
+                      <small id="totalrating">( {{object.ratingcount}} Reviews )</small>
+                    </div>
+                  </div>
+
+                  <div class="row  m-0 p-2">
+                    <div class="col-12 ">
+                      <div class="text-muted h6">Rating Breakup</div>
+
+                      <div class="viwerBreakupRow starFive" *ngFor="let brestart of breakingRating | keyvalue">
+                        <div class="side">
+                          <div>{{brestart.key}} <i class="fa fa-star"></i></div>
+                        </div>
+                        <div class="middle w-75">
+                          <div class="bar-container bg-secondary "
+                            [style.width]="getwidthRating(brestart.value,object.ratingcount) " style="height: 10px;">
+                          </div>
+                        </div>
+                        <div class="right ">
+                          <div class="count5start">{{brestart.value}}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+              <p>
+                <span *ngFor="let item of[].constructor(avgrating)">
+                  <i class="fa fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+
+                </span>
+                <span *ngFor="let item of[].constructor(5-avgrating)">
+                  <i class="far fa-sm fa-star ml-1 " aria-hidden="true"> </i>
+                </span>
+              </p>
+            </div>
+            <!-- <div class="col-6 col-md-3 border-right text-center">
+              <span>
+                <i class="fa fa-lg fa-comment mr-1" aria-hidden="true">
+                </i>
+                <span>Comments</span>
+              </span>
+              <p>{{object.commentcount}}</p>
+            </div> -->
+          </div>
+        </div>
+        <!-- Flex Container in Column Direction -->
+        <div class="col-12 col-md-6 footeractions-right">
+          <div class="row justify-content-around justify-content-md-end m-md-0 mb-2 flex-action">
+            <div class="align-self-end pr-4 text-center" *ngIf="isAuthorized$ | async">
+              <span>
+                <i [ngClass]="(bookmarkitem!=null && bookmarkitem.status==='active')?'fa':'far'"
+                  [attr.title]="(bookmarkitem!=null && bookmarkitem.status==='active') ? 'Click here to UnBookmark this item': 'Click here to Bookmark this item'"
+                  class=" fa-lg  fa-bookmark element" aria-hidden="true" (click)="savebookmark()">
+                </i>
+              </span>
+            </div>
+            <div class="text-center user-rating-action">
+              <p class="m-0 p-0">Rating this item</p>
+              <span *ngIf="!(isAuthorized$ | async) && !myrating">
+                <i class="far fa-lg fa-star element " aria-hidden="true" style="cursor: pointer;"
+                  (click)="saveRating(1)">
+                </i>
+                <i class="far fa-lg fa-star element " aria-hidden="true" style="cursor: pointer;"
+                  (click)="saveRating(2)">
+                </i>
+                <i class="far fa-lg fa-star element" aria-hidden="true" style="cursor: pointer;"
+                  (click)="saveRating(3)">
+                </i>
+                <i class="far fa-lg fa-star element" aria-hidden="true" style="cursor: pointer;"
+                  (click)="saveRating(4)">
+                </i>
+                <i class="far fa-lg fa-star element" aria-hidden="true" style="cursor: pointer;"
+                  (click)="saveRating(5)">
+                </i>
+              </span>
+              <ng-container *ngIf="myrating">
+
+                <span *ngFor="let item of[].constructor(5);let i=index">
+                  <!-- <span>{{i}}</span> -->
+                  <i class="fa fa-sm fa-star ml-1 " *ngIf="i < myrating.ratingcount" aria-hidden="true"
+                    style="cursor: pointer;" (click)="saveRating(i+1)"> </i>
+                  <i class="far fa-sm fa-star ml-1 " *ngIf="i >= myrating.ratingcount" aria-hidden="true"
+                    style="cursor: pointer;" (click)="saveRating(i+1)"> </i>
+                </span>
+              </ng-container>
+            </div>
+            <div class="d-flex align-self-end justify-content-center justify-content-md-start pl-4 action-icons">
+              <div class="pr-3 text-center">
+                <div ngbDropdown class="d-inline-block">
+                  <a type="button" class="arrowhide dropdown-toggle" id="dropdownBasic1" ngbDropdownToggle
+                    aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-lg fa-share-alt " aria-hidden="true"> </i>
+                  </a>
+                  <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+
+                    <a ngbDropdownItem calss=""
+                      href="https://facebook.com/sharer/sharer.php?u={{object.firstMetadataValue('dc.identifier.uri')}}">
+                      <i class="fab fa-facebook-f facebookshare sharbutton"></i> <span class="ml-3">Facebook</span>
+                    </a>
+                    <a ngbDropdownItem calss=""
+                      href="https://twitter.com/share?url={{object.firstMetadataValue('dc.identifier.uri')}}">
+                      <i class="fab fa-twitter twittershare sharbutton"></i> <span class="ml-3">X</span>
+                    </a>
+                    <a ngbDropdownItem calss=""
+                      href="whatsapp://send?text={{object.firstMetadataValue('dc.identifier.uri')}}">
+                      <i class="fab fa-whatsapp wahtsupshare sharbutton"></i> <span class="ml-3">WhatsApp</span>
+                    </a>
+                    <a ngbDropdownItem calss=""
+                      href="https://www.linkedin.com/shareArticle?mini=true&url={{object.firstMetadataValue('dc.identifier.uri')}}">
+                      <i class="fab fa-linkedin linkshare sharbutton"></i> <span class="ml-3">LinkedIn</span>
+                    </a>
+                  </div>
+                </div>
+
+
+
+
+              </div>
+              <div class="pr-3 text-center" (click)="Citation(content)">
+                <a target="_self">
+                  <i class=" fa fa-lg fa-quote-right  " aria-hidden="true">
+                  </i>
+                </a>
+              </div>
+              <div class="pr-3 text-center">
+                <a target="_self" href="mailto:?subject={{object.firstMetadataValue('dc.identifier.uri')}}">
+                  <i class=" far fa-lg fa-envelope" aria-hidden="true"> </i>
+                </a>
+              </div>
+              <div class="pr-3 text-center" (click)="printPage()">
+                <span>
+                  <i class=" fa fa-lg fa-print  " aria-hidden="true"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row boxshadow row-cols mt-4 info-block">
+    <div class="col-12 col-md-4 mb-md-0 mb-3 pr-md-1 p-0 attachments">
+
+      <div class="bg-light-background h-100 p-3 w-100" style="background-color: #f8f8f8 !important;">
+
+        <ds-item-page-file-section [isBlank]="isBlank" [item]="object" class="mb-3"></ds-item-page-file-section>
+        <div class="row mt-4 pl-4">
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.page')">
+            <span class="text-secondary h6">{{'publication.page.pages' | translate}}: </span>
+            <p class="slash text-black">{{object.firstMetadataValue('dc.page')}}</p>
+          </div>
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.volume')">
+            <span class="text-secondary h6">{{'publication.page.volume' | translate}}: </span>
+            <p class="slash text-black">{{object.firstMetadataValue('dc.volume')}}</p>
+          </div>
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.date.issued')">
+            <span class="text-secondary h6">Issue Date: </span>
+            <span class="text-black">{{object.firstMetadataValue('dc.date.issued')}}</span>
+          </div>
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.language.iso')">
+            <span class="text-secondary h6">{{'untypeitem.metadata.language' | translate}}: </span>
+            <ng-container *ngFor="let subject of object.allMetadataValues('dc.language.iso'); let last = last;">
+              <a class="h6 item-page-link-color" [routerLink]="['/search']" [queryParams]="{'f.language':subject+',equals'}"><span
+                  class="badge badge-secondary  ">{{subject}}</span></a>
+              <span *ngIf="!last">; </span>
+            </ng-container>
+          </div>
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.rights.uri')">
+              <span class="text-secondary h6">{{'untypeitem.metadata.licence-terms' | translate}}: </span>
+              <div class="d-inline-flex flex-column" style="gap: 4px;">
+                <span class="text-black">{{'untypeitem.metadata.creativecommons' | translate}}</span>
+                <span class="">
+                  <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    *ngIf="object.firstMetadataValue('dc.rights')=== 'CC0 (Public Domain)'"
+                    alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                      [src]="'assets/images/cc-0.png'" style="height: 30px;"
+                      alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+                  <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY'"
+                    alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                      [src]="'assets/images/cc-by.png'" style="height: 30px;"
+                      alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+                  <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY-SA'"
+                    alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                      style="height: 30px;" [src]="'assets/images/cc-by-sa.png'"
+                      alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+                  <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY-NC'"
+                    alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                      style="height: 30px;" [src]="'assets/images/cc-by-nc.png'"
+                      alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+                  <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY-NC-SA'"
+                    alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                      style="height: 30px;" [src]="'assets/images/cc-by-nc-sa.png'"
+                      alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+                  <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY-ND'"
+                    alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                      style="height: 30px;" [src]="'assets/images/cc-by-nd.png'"
+                      alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+                  <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY-NC-ND'"
+                    alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                    [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                      style="height: 30px;" [src]="'assets/images/cc-by-nc-nd.png'"
+                      alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+              </span>
+            </div>
+          </div>
+          
+          <!-- <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.doi')">
+            <span class="text-secondary h6">{{'publication.page.identifier.doi' | translate}}: </span>
+            <a href="https://doi.org/{{object.firstMetadataValue('dc.identifier.doi')}}" target="_blank">
+              <span class="slash text-black">{{object.firstMetadataValue('dc.identifier.doi')}}</span>
+            </a>
+          </div> -->
+          <!-- <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.uri')">
+            <span class="text-secondary h6">{{'untypeitem.metadata.publicationuri' | translate}}:  </span>
+            <a [href]="object.firstMetadataValue('dc.identifier.uri')" target="_blank">
+              <p class="slash text-black">{{object.firstMetadataValue('dc.identifier.uri')}}</p>
+            </a>
+          </div> -->
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.openaccess')">
+            <span class="text-secondary h6">{{'publication.page.openaccess' | translate}}: </span>
+            <p class="slash text-black">{{object.firstMetadataValue('dc.openaccess')}}</p>
+          </div>
+          <!-- <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.publisher')">
+            <span class="text-secondary h6">{{'publication.page.publisher' | translate}}:  </span>
+            <p class="slash text-black">{{object.firstMetadataValue('dc.publisher')}}</p>
+          </div> -->
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.event.title')">
+            <span class="text-secondary h6">Event Title:</span>
+            <p class="slash text-black">{{object.firstMetadataValue('dc.event.title')}}</p>
+          </div>
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.event.type')">
+            <span class="text-secondary h6">Event Type: </span>
+            <p class="slash text-black">{{object.firstMetadataValue('dc.event.type')}}</p>
+          </div>
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.event.date')">
+            <span class="text-secondary h6">Event Date: </span>
+            <p class="slash text-black">{{object.firstMetadataValue('dc.event.date')}}</p>
+          </div>
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.event.place')">
+            <span class="text-secondary h6">Event Place: </span>
+            <p class="slash text-black">{{object.firstMetadataValue('dc.event.place')}}</p>
+          </div>
+          <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.presentation.type')">
+            <span class="text-secondary h6">Presentation Type: </span>
+            <p class="slash text-black">{{object.firstMetadataValue('dc.presentation.type')}}</p>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+    <div class="col-12 col-md-8 pl-md-1 p-0 moredetails bg-light-background"
+      style="background-color: #f8f8f8 !important;">
+      <div class="bg-light-background h-100 p-3 w-100" style="background-color: #f8f8f8 !important;">
+        <h4 class="mb-2 text-secondary ">{{'untypeitem.metadata.moredetail' | translate}}</h4>
+        <!-- <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.format')">
+          <span class="font-weight-bold h6">Format </span>
+          <p class="slash text-black">{{object.firstMetadataValue('dc.format')}}</p>
+        </div> -->
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.description.abstract')">
+          <span class="text-secondary h6">{{'item.page.abstract' | translate}}:  </span>
+          <!-- <span [innerHTML]="object.firstMetadataValue('dc.description.abstract')"></span> -->
+          <ds-truncatable [id]="2" *ngIf="object !== undefined && object !== null">
+            <ds-truncatable-part [id]="2" [minLines]="3">
+              <span class="slash text-black" [innerHTML]="object.firstMetadataValue('dc.description.abstract')"></span>
+            </ds-truncatable-part>
+          </ds-truncatable>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.title.alternative')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.othertitles' | translate}}: </span>
+          <ng-container *ngFor="let titles of object.allMetadataValues('dc.title.alternative'); let last = last;">
+            <span class="text-black">{{titles}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.centre')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.center' | translate}}: </span>
+          <ng-container *ngFor="let titles of object.allMetadataValues('dc.centre'); let last = last;">
+            <span class="text-black">{{titles}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.identifier' | translate}}: </span>
+          <ng-container *ngFor="let titles of object.allMetadataValues('dc.identifier'); let last = last;">
+            <span class="text-black">{{titles}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.citation')">
+          <span class="text-secondary  h6">{{'item.page.citation' | translate}}: </span>
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.identifier.citation'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.topics')">
+          <span class="text-secondary h6">Keywords </span>
+          <ng-container *ngFor="let subject of object.allMetadataValues('dc.topics'); let last = last;">
+
+            <span class=" mb-1 text-black">{{subject}} </span>
+
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.journal.name')">
+          <span class="text-secondary h6">Journal Name </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.journal.name')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contributor.editor')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.editors' | translate}}:  </span>
+          <ng-container *ngFor="let language of object.allMetadataValues('dc.contributor.editor'); let last = last;">
+            <span class="text-black">{{language}}</span>
+
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.organization')">
+          <span class="text-secondary h6">Organization </span>
+          <ng-container *ngFor="let subject of object.allMetadataValues('dc.organization'); let last = last;">
+            <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.organization':subject+',equals'}">
+              <p class="badge badge-secondary  ">{{subject}}</p>
+            </a>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.source')">
+          <span class="text-secondary h6">Source(s) </span>
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.source'); let last = last;">
+            <a [routerLink]="['/search']" [queryParams]="{'f.source':author+',equals'}">
+              <p class="badge badge-secondary  ">{{author}}</p>
+            </a>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.coverage')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.publicationplace' | translate}}: </span>
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.coverage'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contributor')">
+          <span class="text-secondary h6">{{'relationships.isContributorOf.Person' | translate}}:  </span>
+          <ng-container *ngFor="let person of object.allMetadataValues('dc.contributor'); let last = last;">
+            <span class="text-black">{{person}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contributor.affiliation')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.contributor_affiliation' | translate}}: </span>
+          <span>{{object.firstMetadataValue('dc.contributor.affiliation')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.description')">
+          <span class="text-secondary h6">{{'person.page.orcid.sync-queue.table.header.description' | translate}}: </span>
+          <!-- <span class="slash text-black"> {{object.firstMetadataValue('dc.description')}}</span> -->
+           <ds-truncatable [id]="3" *ngIf="object !== undefined && object !== null">
+            <ds-truncatable-part [id]="3" [minLines]="3">
+              <span class="slash text-black" [innerHTML]="object.firstMetadataValue('dc.description')"></span>
+            </ds-truncatable-part>
+          </ds-truncatable>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.other')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.other' | translate}}: </span>
+          <ng-container *ngFor="let other of object.allMetadataValues('dc.identifier.other'); let last = last;">
+            <span>{{other}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.description.sponsorship')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.projectsfounders' | translate}}: </span>
+          <ng-container
+            *ngFor="let sponcer of object.allMetadataValues('dc.description.sponsorship'); let last = last;">
+            <span>{{sponcer}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.title.journal')">
+          <span class="text-secondary  h6">{{'publication.page.journal-title' | translate}}: </span>
+          <ng-container *ngFor="let journal of object.allMetadataValues('dc.title.journal'); let last = last;">
+            <span>{{journal}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.issuenumber')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.publicationjournalissue' | translate}}: </span>
+          <ng-container *ngFor="let issue of object.allMetadataValues('dc.issuenumber'); let last = last;">
+            <span>{{issue}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.date.year')">
+          <span class="text-secondary  h6">{{'home.label.year' | translate}}: </span>
+          <ng-container *ngFor="let issue of object.allMetadataValues('dc.date.year'); let last = last;">
+            <span>{{issue}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.peerreviewed')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.publicationpeerreviewed' | translate}}: </span>
+          <ng-container *ngFor="let issue of object.allMetadataValues('dc.peerreviewed'); let last = last;">
+            <span>{{issue}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.format.preprint')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.publicationpreprint' | translate}}: </span>
+          <ng-container *ngFor="let issue of object.allMetadataValues('dc.format.preprint'); let last = last;">
+            <span>{{issue}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.relation.ispartofseries')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.publicationoptional' | translate}}: </span>
+          <ng-container *ngFor="let issue of object.allMetadataValues('dc.relation.ispartofseries'); let last = last;">
+            <span>{{issue}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contributor.creator')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.publicationcreator' | translate}}:  </span>
+          <ng-container *ngFor="let creator of object.allMetadataValues('dc.contributor.creator'); let last = last;">
+            <span class="text-black">{{creator}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.title.conference')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.publicationconferencetitle' | translate}} </span>
+          <ng-container *ngFor="let creator of object.allMetadataValues('dc.title.conference'); let last = last;">
+            <span class="text-black">{{creator}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.coverage.conference')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.publicationinternationalconference' | translate}}: </span>
+          <ng-container *ngFor="let creator of object.allMetadataValues('dc.coverage.conference'); let last = last;">
+            <span class="text-black">{{creator}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.keynote')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.publicationkeynote' | translate}}:  </span>
+          <ng-container *ngFor="let creator of object.allMetadataValues('dc.keynote'); let last = last;">
+            <span class="text-black">{{creator}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.inproceedings')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.publicationinproceeding' | translate}}:  </span>
+          <ng-container *ngFor="let creator of object.allMetadataValues('dc.inproceedings'); let last = last;">
+            <span class="text-black">{{creator}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.date')">
+          <span class="text-secondary h6">{{'item.page.date' | translate}}:  </span>
+          <ng-container *ngFor="let creator of object.allMetadataValues('dc.date'); let last = last;">
+            <span class="text-black">{{creator}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contributor.asignee')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.publicationasignee' | translate}}:  </span>
+          <ng-container *ngFor="let creator of object.allMetadataValues('dc.contributor.asignee'); let last = last;">
+            <span class="text-black">{{creator}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.patentid')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.publicationpatentid' | translate}}:  </span>
+          <ng-container *ngFor="let creator of object.allMetadataValues('dc.identifier.patentid'); let last = last;">
+            <span class="text-black">{{creator}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contributor.audience')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.publicationaudience' | translate}}:  </span>
+          <ng-container *ngFor="let creator of object.allMetadataValues('dc.contributor.audience'); let last = last;">
+            <span class="text-black">{{creator}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.source.title')">
+          <span class="text-secondary h6">{{'publication.source.title' | translate}}:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.source.title')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.research.area')">
+          <span class="text-secondary h6">{{'item.page.research.area' | translate}}:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.research.area')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contributor.guide')">
+          <span class="text-secondary h6">Contributor Guide:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.contributor.guide')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contributor.coguide')">
+          <span class="text-secondary h6">Contributor Co-Guide:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.contributor.coguide')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.date.awarded')">
+          <span class="text-secondary h6">Date of Awarded:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.date.awarded')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.date.completed')">
+          <span class="text-secondary h6">Date of Completed:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.date.completed')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.date.registered')">
+          <span class="text-secondary h6">Date of Registered:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.date.registered')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.publisher.institution')">
+          <span class="text-secondary h6">Publisher Institution:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.publisher.institution')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.publisher.coinstitute')">
+          <span class="text-secondary h6">Publisher Co-Institute:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.publisher.coinstitute')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.thesis.type')">
+          <span class="text-secondary h6">Thesis Type:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.thesis.type')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.creator')">
+          <span class="text-secondary h6">Creator:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.creator')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.publication.status')">
+          <span class="text-secondary h6">Publication Status:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.publication.status')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.publication.date')">
+          <span class="text-secondary h6">Date of Publication:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.publication.date')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.publication.place')">
+          <span class="text-secondary h6">Place of Publication:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.publication.place')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.publisher.year')">
+          <span class="text-secondary h6">Publication Year:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.publisher.year')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.official.url')">
+          <span class="text-secondary h6">Official URL:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.official.url')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('abcd')">
+          <span class="text-secondary h6">Page range:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('abcd')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('abcd')">
+          <span class="text-secondary h6">Book Title:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('abcd')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('abcd')">
+          <span class="text-secondary h6">Series name:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('abcd')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.isbn')">
+          <span class="text-secondary h6">ISBN: </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.identifier.isbn')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.ismn')">
+          <span class="text-secondary h6">ISMN: </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.identifier.ismn')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.issn')">
+          <span class="text-secondary h6">ISSN: </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.identifier.issn')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.govdoc')">
+          <span class="text-secondary h6">{{'untypeitem.metadata.govdoc' | translate}}: </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.identifier.govdoc')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.other')">
+          <span class="text-secondary h6">Other: </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.identifier.other')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.url')">
+          <span class="text-secondary h6">URL:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.url')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.patent.applicant')">
+          <span class="text-secondary h6">Patent Applicant:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.patent.applicant')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identification.number')">
+          <span class="text-secondary h6">Identification number:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.identification.number')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.funders')">
+          <span class="text-secondary h6">Funders:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.funders')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.projects')">
+          <span class="text-secondary h6">Projects:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.projects')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.media.output')">
+          <span class="text-secondary h6">Media of Output:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.media.output')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contact.email')">
+          <span class="text-secondary h6">Contact email address:  </span>
+          <span class="slash text-black">{{object.firstMetadataValue('dc.contact.email')}}</span>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('dc.bibliographicCitation.conferencedate')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.conferencedate' | translate}}: </span>
+          <ng-container
+            *ngFor="let author of object.allMetadataValues('dc.bibliographicCitation.conferencedate'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('dc.bibliographicCitation.conferencename')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.conferencename' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.bibliographicCitation.conferencename')}}</span> -->
+          <ng-container
+            *ngFor="let author of object.allMetadataValues('dc.bibliographicCitation.conferencename'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('dc.bibliographicCitation.conferenceplace')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.conferencelocation' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.bibliographicCitation.conferenceplace')}}</span> -->
+          <ng-container
+            *ngFor="let author of object.allMetadataValues('dc.bibliographicCitation.conferenceplace'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.publisher')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.publisher' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.publisher')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.publisher'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('dc.bibliographicCitation.title')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.journaltitle' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.bibliographicCitation.title')}}</span> -->
+          <ng-container
+            *ngFor="let author of object.allMetadataValues('dc.bibliographicCitation.title'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('dc.bibliographicCitation.volume')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.volume' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.bibliographicCitation.volume')}}</span> -->
+          <ng-container
+            *ngFor="let author of object.allMetadataValues('dc.bibliographicCitation.volume'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('dc.bibliographicCitation.issue')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.articleno' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.bibliographicCitation.issue')}}</span> -->
+          <ng-container
+            *ngFor="let author of object.allMetadataValues('dc.bibliographicCitation.issue'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.format.pagerange')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.pagerange' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.format.pagerange')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.format.pagerange'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.title.parent')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.titleofparentbook' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.title.parent')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.title.parent'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <!-- <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.rights')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.creativecommons' | translate}}: </span>
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.rights'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div> -->
+        <!-- <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.identifier')">
+    <span class="text-secondary  h6">{{'untypeitem.metadata.identifiers' | translate}}: </span>
+    <ng-container *ngFor="let author of object.allMetadataValues('dc.identifier'); let last = last;">
+      <a [href]="object.firstMetadataValue('dc.identifier')">{{author}}</a>
+      <span *ngIf="!last">; </span>
+    </ng-container>
+  </div> -->
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('refterms.dateFirstOnline')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.dateofonlinepubliction' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('refterms.dateFirstOnline')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('refterms.dateFirstOnline'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('rioxxterms.licenseref.uri')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.licenceuri' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('rioxxterms.licenseref.uri')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('rioxxterms.licenseref.uri'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('rioxxterms.licenseref.startdate')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.licensestartdate' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('rioxxterms.licenseref.startdate')}}</span> -->
+          <ng-container
+            *ngFor="let author of object.allMetadataValues('rioxxterms.licenseref.startdate'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dcterms.dateAccepted')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.dateaccepted' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dcterms.dateAccepted')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dcterms.dateAccepted'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('rioxxterms.version')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.version' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('rioxxterms.version')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('rioxxterms.version'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('rioxxterms.versionofrecord')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.versionofrecord' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('rioxxterms.versionofrecord')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('rioxxterms.versionofrecord'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('refterms.panel')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.refpanel' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('refterms.panel')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('refterms.panel'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.relation.youtube')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.youtube' | translate}}: </span>
+          <!-- <a [href]="object.firstMetadataValue('dc.relation.youtube')">{{object.firstMetadataValue('dc.relation.youtube')}}</a> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.relation.youtube'); let last = last;">
+            <a class="item-page-link-color" [href]="object.firstMetadataValue('dc.relation.youtube')">{{author}}</a>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.relation.vimeo')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.vimeo' | translate}}: </span>
+          <!-- <a [href]="object.firstMetadataValue('dc.relation.vimeo')">{{object.firstMetadataValue('dc.relation.vimeo')}}</a> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.relation.vimeo'); let last = last;">
+            <a class="item-page-link-color" [href]="object.firstMetadataValue('dc.relation.vimeo')">{{author}}</a>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.relation.embedded')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.embedded' | translate}}: </span>
+          <!-- <a [href]="object.firstMetadataValue('dc.relation.embedded')">{{object.firstMetadataValue('dc.relation.embedded')}}</a> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.relation.embedded'); let last = last;">
+            <a class="item-page-link-color"[href]="object.firstMetadataValue('dc.relation.embedded')">{{author}}</a>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.identifier.doi')">
+            <span class="text-secondary h6">{{'publication.page.identifier.doi' | translate}}: </span>
+            <a class="item-page-link-color"href="https://doi.org/{{object.firstMetadataValue('dc.identifier.doi')}}" target="_blank">
+              <span class="slash">{{object.firstMetadataValue('dc.identifier.doi')}}</span>
+            </a>
+        </div>
+        <div class="col-lg-12 mb-2 p-0" style="word-break: break-all;" *ngIf="object.firstMetadataValue('dc.identifier.uri')">
+            <span class="text-secondary h6">{{'item.page.uri' | translate}}: </span>
+            <a class="item-page-link-color"href="object.firstMetadataValue('dc.identifier.uri')" target="_blank">
+              <span class="slash">{{object.firstMetadataValue('dc.identifier.uri')}}</span>
+            </a>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.relation.uri')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.resource' | translate}}: </span>
+          <!-- <a [href]="object.firstMetadataValue('dc.relation.uri')" target="_blank">{{object.firstMetadataValue('dc.relation.uri')}}</a> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.relation.uri'); let last = last;">
+            <a class="item-page-link-color" [href]="object.firstMetadataValue('dc.relation.uri')" target="_blank">{{author}}</a>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.publisher.place')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.place' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.publisher.place')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.publisher.place'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.description.degree')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.thesis' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.description.degree')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.description.degree'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.format.pages')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.pages' | translate}}: </span>
+          <!-- <a [href]="object.firstMetadataValue('dc.identifier.uri')" target="_blank">{{object.firstMetadataValue('dc.format.pages')}}</a> -->
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.format.pages')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.format.pages'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.description.refereed')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.refereed' | translate}}: </span>
+          <!-- <span class="text-black">{{object.firstMetadataValue('dc.description.refereed')}}</span> -->
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.description.refereed'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.subject.other')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.subject' | translate}}: </span>
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.subject.other'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.coverage.spatial')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.geographical' | translate}}: </span>
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.coverage.spatial'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.description.notes')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.notes' | translate}}: </span>
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.description.notes'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.subject.asfa')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.asfa' | translate}}: </span>
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.subject.asfa'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.description.status')">
+          <span class="text-secondary  h6">{{'untypeitem.metadata.status' | translate}}: </span>
+          <ng-container *ngFor="let author of object.allMetadataValues('dc.description.status'); let last = last;">
+            <span>{{author}}</span>
+            <span *ngIf="!last">; </span>
+          </ng-container>
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('person.biography')">
+          <span class="font-weight-bold h6">Biography </span>
+          <p> {{object.firstMetadataValue('person.biography')}}</p>
+
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract"
+          *ngIf="object.firstMetadataValue('person.research.interest')">
+          <span class="font-weight-bold h6">Research Intrest </span>
+          <p> {{object.firstMetadataValue('person.research.interest')}}</p>
+
+        </div>
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('person.role')">
+          <span class="font-weight-bold h6">Role </span>
+          <p> {{object.firstMetadataValue('person.role')}}</p>
+
+        </div>
+        <ds-item-page-collections class="col-lg-12 mb-2 p-0 item-list-abstract"
+          [item]="object"></ds-item-page-collections>
+
+        <div class="col-lg-12 mb-2 p-0 item-list-abstract mt-3">
+          <a class="item-page-link-color" class="btn btn-outline-primary" [routerLink]="[itemPageRoute + '/full']" role="button">
+            <i class="fas fa-info-circle"></i> {{"item.page.link.full" | translate}}
+          </a>
+        </div>
+
+        <!-- <div class="col-lg-12 mb-2 p-0 item-list-abstract mt-4"
+          *ngIf="object.firstMetadataValue('dc.rights.uri') && object.firstMetadataValue('dc.rights.uri') !== '-' && object.firstMetadataValue('dc.rights') !== 'No Creative Commons'">
+          <h5>{{'untypeitem.metadata.title' | translate}}</h5>
+          <p>{{'untypeitem.metadata.creative_commons' | translate}}</p>
+          <div class="row">
+            <div class="col-lg-4">
+              <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                *ngIf="object.firstMetadataValue('dc.rights')=== 'CC0 (Public Domain)'"
+                alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                  [src]="'assets/images/cc-0.png'" style="height: 30px;"
+                  alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+              <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY'"
+                alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                  [src]="'assets/images/cc-by.png'" style="height: 30px;"
+                  alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+              <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY-SA'"
+                alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                  style="height: 30px;" [src]="'assets/images/cc-by-sa.png'"
+                  alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+              <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY-NC'"
+                alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                  style="height: 30px;" [src]="'assets/images/cc-by-nc.png'"
+                  alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+              <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY-NC-SA'"
+                alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                  style="height: 30px;" [src]="'assets/images/cc-by-nc-sa.png'"
+                  alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+              <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY-ND'"
+                alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                  style="height: 30px;" [src]="'assets/images/cc-by-nd.png'"
+                  alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+              <a title="Attribution-NonCommercial-ShareAlike 4.0 International"
+                *ngIf="object.firstMetadataValue('dc.rights')=== 'CC BY-NC-ND'"
+                alt="Attribution-NonCommercial-ShareAlike 4.0 International"
+                [href]="object.firstMetadataValue('dc.rights.uri')" rel="license"><img class="img-responsive"
+                  style="height: 30px;" [src]="'assets/images/cc-by-nc-nd.png'"
+                  alt="Attribution-NonCommercial-ShareAlike 4.0 International"></a>
+            </div>
+            <div class="col-lg-8">
+              <span>{{'untypeitem.metadata.license_description' | translate}}
+                <ng-container *ngFor="let author of object.allMetadataValues('dc.rights.uri'); let last = last;">
+                  <a [href]="object.firstMetadataValue('dc.rights.uri')" target="_blank">{{author}}</a>
+                  <span *ngIf="!last">; </span>
+                </ng-container>
+              </span>
+            </div>
+          </div>
+        </div> -->
+
+      </div>
+    </div>
+  </div>
+  <!-- <div class="row boxshadow bg-light-background mt-4 comments-actions d-none">
+    <div class="container-fluid bg-light-background pb-3">
+      <form [formGroup]="CommentFormGroup">
+        <div class="row mb-2">
+          <div class="col-lg-12 p-3">
+            <span class="text-secondary  h4 ">Comments </span>
+            <span class="text-secondary ">(Leave your Comments here about this item.)</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12 col-md-9 col-lg-10">
+            <input type="text" value="" formControlName="comments" class="form-control"
+              placeholder="Enter Comments here">
+          </div>
+          <div class="col-12 col-md-3 col-lg-2 mt-2 m-md-0 px-2">
+            <button (click)="savecomment()" [disabled]="CommentFormGroup.invalid"
+              class="form-control subBtn btn btn-secondary ">
+              <p class="ellipsify m-0">Add Comment</p>
+              <i class="fa fa-plus-circle ml-2"> </i>
+            </button>
+          </div>
+        </div>
+      </form>
+      <ds-pagination *ngIf="(pageInfoState$ | async)?.totalElements > 0 && !loder" [paginationOptions]="config"
+        [hidesortOption]="false" [pageInfoState]="pageInfoState$" (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)" [collectionSize]="(pageInfoState$ | async)?.totalElements"
+        [hideGear]="true" [hidePagerWhenSinglePage]="true" [hidePaginationDetail]="true" style="width:100%">
+        <div class="row mt-3 " *ngFor="let commentobj of (comment$ | async)?.page; let i=index;">
+          <ng-container *ngIf="commentobj.status!=3">
+
+          </ng-container>
+          <div class="col-lg-12 border-top">
+            <p class="mt-2">{{commentobj.comment}}</p>
+          </div>
+          <div class="col-lg-12 text-secondary " style=" text-align: right;">
+
+            <span>{{commentobj.submitterRest.metadata['eperson.firstname'][0].value+'
+              '+commentobj.submitterRest.metadata['eperson.lastname'][0].value}} add comment on {{commentobj.actiondate
+              |
+              date:'yyyy-MM-dd HH:mm:ss'}} </span> <a *ngIf="isAuthorized$ | async" (click)="flagComment(commentobj)"> |
+              Flag this Comment</a>
+          </div>
+        </div>
+      </ds-pagination>
+
+    </div>
+  </div> -->
+
+  <div class="row boxshadow bg-light-background mt-4">
+    <ng-template #content let-modal>
+      <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Citation</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="container modal-body">
+        <div class="row">
+          <div class="col-12">
+            <!-- <p #userinput>{{cirtation}}</p> -->
+            <div class="main-div" *ngFor="let item of cirtation">
+              <div class="key">{{item[0]}}</div>
+              <div class="value" #userInput>{{ item[1] }}<i class="fa fa-copy" ngbTooltip="Copy"
+                  (click)="copyInputMessage(userInput)"></i></div>
+            </div>
+          </div>
+          <div class="col-12 d-flex border-top mt-3 pt-3">
+            <!-- <label class="form-check-label">Style</label> -->
+            <select class="form-control mr-3" [(ngModel)]="cirteanselection">
+              <option value="RefMan" selected>RefMan</option>
+              <option value="EndNote">EndNote</option>
+              <option value="BibTeX">BibTeX</option>
+              <option value="xlsx">Export Excel(xlsx)</option>
+              <option value="csv">Export Excel(csv)</option>
+            </select>
+            <button class="float-right mr-3 btn btn-secondary " (click)="dowloadFile()">Download</button>
+          </div>
+        </div>
+      </div>
+
+    </ng-template>
+  </div>
+  <div class="row bg-white mt-4 comments-actions">
+    <div class="container-fluid bg-white pb-3">
+      <div class="row align-items-center" style="margin-left: 0px!important;margin-right: 0px!important;">
+        <div class="col-md-6 col-sm-12">
+          <div class="row mb-2">
+            <div class="col-lg-12 p-3">
+              <span class="text-primary h4 ">{{'untypeitem.metadata.itemanalyticstitle' | translate}}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-sm-12 text-md-right mt-3">
+          <div class="d-flex align-items-center justify-content-md-end">
+            <div class="btn-fliter">
+              <button [class]="dateType === 0 ? 'enabledbutton':''" (click)="buttonClick(0)">{{'home.label.week' | translate}}</button>
+              <span class="line"></span>
+              <button [class]="dateType === 1 ? 'enabledbutton':''" (click)="buttonClick(1)">{{'home.label.month' | translate}}</button>
+              <span class="line"></span>
+              <button [class]="dateType === 2 ? 'enabledbutton':''" (click)="buttonClick(2)">{{'home.label.year' | translate}}</button>
+              <span class="line"></span>
+              <button [class]="dateType === 3 ? 'enabledbutton':''" (click)="buttonClick(3)">{{'home.label.alltime' | translate}}</button>
+          </div>
+            <div>
+              <ng-template #htmlContent>
+                <div>
+                  <p>{{'home.label.weekinfo' | translate}}</p>
+                  <p>{{'home.label.monthinfo' | translate}}</p>
+                  <p>{{'home.label.yearinfo' | translate}}</p>
+                  <p>{{'home.label.alltimeinfo' | translate}}</p>
+                </div>
+              </ng-template>
+              <span [ngbTooltip]="htmlContent" class="ml-2"><i class="fas fa-info-circle"></i></span>
+            </div>
+          </div>
+          <div class="chart-heading mt-2">
+            <p class="description">{{'home.label.desireperiod' | translate}}</p>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-left: 0px!important;margin-right: 0px!important;">
+        <div class="col-md-5 col-sm-12 align-items-center">
+          <div style="max-height: 300px;">
+            <ngx-charts-line-chart *ngIf="!isLoading" [scheme]="colorScheme" [legend]="legend" [showXAxisLabel]="showXAxisLabel"
+              [showYAxisLabel]="showYAxisLabel" [xAxis]="xAxis" [yAxis]="yAxis" [xAxisLabel]="xAxisLabel"
+              [yAxisLabel]="yAxisLabel" [timeline]="timeline" [results]="chartOptions" [legendPosition]="legendPosition"
+              [showGridLines]="false">
+            </ngx-charts-line-chart>
+          </div>
+          <div class="d-flex justify-content-center align-items-center" style="min-height: 450px;" *ngIf="!!isLoading">
+            <div class="spinner-border" role="status">
+              <span class="sr-only">{{'home.label.loading' | translate}}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-7 col-sm-12 align-items-center" style="margin-top: 20px;">
+          <div class="d-flex justify-content-center align-items-center" style="min-height: 450px;" *ngIf="!!isLoading2">
+            <div class="spinner-border" role="status">
+              <span class="sr-only">{{'home.label.loading' | translate}}</span>
+            </div>
+          </div>
+          <div id="ItemAnalyticsMap" class="map-container">
+            <div class="map"></div>
+            <div class="areaLegend d-flex"></div>
+          </div>
+        </div>
+      </div>
+  </div>
+  </div>
+  <div class="row bg-white mt-4 card-grid-row">
+    <ng-container *ngVar="(itemRD$ | async) as itemRD">
+      <div class="col-12 p-0" *ngIf="itemRD?.hasSucceeded">
+        <div class="m-0 p-3 " style="border-bottom: 1px solid var(--ds-secondary-color) ;">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="left-content text-secondary">
+              <span class="h4">
+                {{'collection.page.browse.recent.head' | translate}}
+              </span>
+              <span class="h6"> {{'untypeitem.metadata.items_from_the_same_collection' | translate}}</span>
+            </div>
+            <div class="btn-group">
+              <button routerLink="." [queryParams]="{view: 'list'}" [class.active]="currentMode === viewModeEnum.GridElement"
+              class="btn btn-primary" queryParamsHandling="merge" style="margin-right: 2px;"
+                routerLinkActive="active" [attr.data-test]="'list-view' | dsBrowserOnly">
+                <span class="fas fa-list"></span><span class="sr-only">{{'search.view-switch.show-list' | translate}}</span>
+              </button>
+              <button routerLink="." [queryParams]="{view: 'grid'}" [class.active]="currentMode === viewModeEnum.GridElement"
+              class="btn btn-primary" queryParamsHandling="merge" style="margin-left: 2px;"
+                routerLinkActive="active" [attr.data-test]="'grid-view' | dsBrowserOnly">
+                <span class="fas fa-th-large"></span><span class="sr-only">{{'search.view-switch.show-grid' | translate}}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <ds-viewable-collection style="background-color: #f2f2f2!important;" [config]="paginationConfig" [sortConfig]="sortConfig" [objects]="itemRD"
+          [hideGear]="true">
+        </ds-viewable-collection>
+      </div>
+      <ds-error *ngIf="itemRD?.hasFailed" message="{{'error.recent-submissions' | translate}}"></ds-error>
+      <ds-themed-loading *ngIf="!itemRD || itemRD.isLoading"
+        message="{{'loading.recent-submissions' | translate}}"></ds-themed-loading>
+      <div *ngIf="!itemRD?.isLoading && itemRD?.payload?.page.length === 0" class="alert alert-info w-100" role="alert">
+        {{'collection.page.browse.recent.empty' | translate}}
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+
+<!--<ds-themed-results-back-button *ngIf="showBackButton | async" [back]="back"></ds-themed-results-back-button>
+<div class="row" *ngIf="iiifEnabled">
+  <div class="col-12">
+    <ds-mirador-viewer  id="iiif-viewer"
+                        [object]="object"
+                        [searchable]="iiifSearchEnabled"
+                        [query]="iiifQuery$ | async">
+    </ds-mirador-viewer>
+  </div>
+</div>
+<div class="d-flex flex-row">
+  
+  <ds-dso-edit-menu></ds-dso-edit-menu>
+</div>
+<div class="row">
+  <div class="col-xs-12 col-md-4">
+    <ng-container *ngIf="!(mediaViewer.image || mediaViewer.video)">
+      <ds-metadata-field-wrapper [hideIfNoTextContent]="false">
+        <ds-themed-thumbnail [thumbnail]="object?.thumbnail | async"></ds-themed-thumbnail>
+      </ds-metadata-field-wrapper>
+    </ng-container>
+    <div *ngIf="mediaViewer.image || mediaViewer.video" class="mb-2">
+      <ds-themed-media-viewer [item]="object"></ds-themed-media-viewer>
+    </div>
+    <ds-themed-item-page-file-section [item]="object"></ds-themed-item-page-file-section>
+
+   
+   
+  </div>
+  <div class="col-xs-12 col-md-7">
+    <ds-themed-item-page-title-field [item]="object" class="mr-auto">
+    </ds-themed-item-page-title-field>
+    <ds-item-page-date-field [item]="object"></ds-item-page-date-field>
+   
+    <ds-generic-item-page-field [item]="object" [fields]="['dc.identifier.doi']" [label]="'publication.page.identifier.doi'">
+    </ds-generic-item-page-field>
+    <ds-generic-item-page-field [item]="object" [fields]="['dc.volume']" [label]="'publication.page.volume'">
+    </ds-generic-item-page-field>
+    <ds-generic-item-page-field [item]="object" [fields]="[' dc.pages']" [label]="'publication.page.pages'">
+    </ds-generic-item-page-field>
+    <ds-generic-item-page-field [item]="object" [fields]="['dc.journal.name']" [label]="'publication.page.name'">
+    </ds-generic-item-page-field>
+    <ds-generic-item-page-field [item]="object" [fields]="['dc.openaccess']" [label]="'item.page.openaccess'">
+    </ds-generic-item-page-field>
+    <ds-generic-item-page-field [item]="object" [fields]="['dc.research.area']" [label]="'item.page.research.area'">
+    </ds-generic-item-page-field>
+    
+   
+    <ds-generic-item-page-field [item]="object" [fields]="['dc.publisher']" [label]="'publication.page.publisher'">
+    </ds-generic-item-page-field>
+   
+    
+  </div>
+</div> -->

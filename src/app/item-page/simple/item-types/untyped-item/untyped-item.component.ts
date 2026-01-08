@@ -1,0 +1,50 @@
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Item } from '../../../../core/shared/item.model';
+import { ViewMode } from '../../../../core/shared/view-mode.model';
+import { listableObjectComponent } from '../../../../shared/object-collection/shared/listable-object/listable-object.decorator';
+import { ItemComponent } from '../shared/item.component';
+import { fadeIn, fadeInOut } from 'src/app/shared/animations/fade';
+import { slide } from 'src/app/shared/animations/slide';
+
+
+/**
+ * Component that represents a publication Item page
+ */
+
+@listableObjectComponent(Item, ViewMode.StandalonePage)
+@Component({
+  selector: 'ds-untyped-item',
+  styleUrls: ['./untyped-item.component.scss'],
+  templateUrl: './untyped-item.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    slide,
+    fadeIn,
+    fadeInOut
+   ]
+  
+})
+export class UntypedItemComponent extends ItemComponent {
+  @Input() isBlank: Boolean = true;
+  lineChartdata:any;
+  type:string;
+  isLoading: false;
+  colorScheme = {
+    domain:['#003D6E','#0061AF']
+  };
+  showXAxis: boolean = true;
+  showYAxis: boolean = true;
+  gradient: boolean = false;
+  showLegend: boolean = true;
+  showLegendLabel: boolean = true;
+  legendPosition: string = 'below';
+  showXAxisLabel: boolean = false;
+  yAxisLabel: string = 'Country';
+  xAxisLabel: string = 'Counts';
+  showYAxisLabel: boolean = false;
+  timeline: boolean = true;
+  xAxis: boolean = true;
+  yAxis: boolean = true;
+  legend: boolean = true;
+
+}

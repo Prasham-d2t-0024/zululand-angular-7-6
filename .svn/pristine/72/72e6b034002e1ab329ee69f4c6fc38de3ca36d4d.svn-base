@@ -1,0 +1,7 @@
+.captcha {
+    width: 400px;
+}
+
+.mt {
+    margin-top: 10px;
+}

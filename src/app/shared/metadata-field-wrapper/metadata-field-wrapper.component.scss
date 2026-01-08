@@ -1,0 +1,17 @@
+:host, ::ng-deep {
+  .simple-view-element { 
+    position: relative;
+
+    .simple-view-element-body {      
+      .thumbnail-img {
+        @media screen and (max-width: map-get($grid-breakpoints, sm)) {
+          justify-content: center;
+        }
+      }
+      .thumbnail-content {
+        width: auto;
+        max-height: 200px;
+      }
+    }
+  }
+}

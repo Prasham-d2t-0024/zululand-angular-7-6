@@ -1,0 +1,80 @@
+<form #form="ngForm" (ngSubmit)="onSubmit(form.value)" action="/search">
+    <div class="repository-searchBox p-0" >
+        <!-- (keyup)="SearchRepo()" -->
+        <div class="row form-group input-group justify-content-center">
+            <input type="text"  [(ngModel)]="query"  (focusin)="focuseinput()"  #keyupquery  name="query" class="col-12 col-sm-5 col-md-7 mb-2 mb-sm-0 borderRight-0 form-control input-child"
+                attr.aria-label="{{ searchPlaceholder }}" [attr.data-test]="'search-box' | dsBrowserOnly"
+                [placeholder]="searchPlaceholder" autocomplete="off" />            
+            <!-- <button *ngIf="showScopeSelector"
+                class="col-12 col-sm-3 col-md-2 borderRight-0 bg-white h-100 mb-2 mb-sm-0 dropdown input-child btn text-truncate partners-btn"
+                [ngbTooltip]="dsoNameService.getName(selectedScope | async)" type="button"
+                (click)="openScopeModal()">
+                {{dsoNameService.getName(selectedScope | async) || ('search.form.scope.all' | translate)}}
+            </button> -->
+            <select  *ngIf="showScopeSelector" #scopecommunity (change)="onSelectedScope(scopecommunity.value)"
+                class="col-12 col-sm-3 col-md-2 borderRight-0 bg-white mb-2 mb-sm-0 dropdown input-child form-control"
+                name="ContentTYPE" id="ContentTYPE">
+                <option value="" [selected]="scope===''">{{'search.form.scope.all' | translate}}</option>
+                <ng-container *ngFor="let community of (communitiesRD$ | async)?.page">
+                    <option [value]="community.id" [selected]="scope===community.id">{{dsoNameService.getName(community)}}</option>
+                </ng-container>
+            </select>
+            <select *ngIf="contenttype" #teams (change)="onSelected(teams.value)" 
+                    class="col-12 col-sm-3 col-md-2 bg-white mb-2 mb-sm-0 dropdown input-child form-control" 
+                    name="ContentTYPE" id="ContentTYPE" >
+                <option value="123" selected>All Items</option>
+                <ng-container *ngFor="let ecds of contenttype;">
+                    <option [value]="ecds.value">{{ecds.label}}</option>
+                </ng-container>
+            </select>
+            <!-- <button class="btn h-100 text-truncate w-100 items-btn">
+                All Items
+            </button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <a class="dropdown-item" href="#">Something else here</a>
+            </div> -->
+            <button type="submit" class="col-12 col-sm-1 mb-2 mb-sm-0 input-child 
+                    d-flex align-items-center justify-content-center border-0 search-button btn btn-{{brandColor}} w-100"
+                    [attr.data-test]="'search-button' | dsBrowserOnly">
+                    <ng-container *ngIf="spinner; else searchIco">
+                        <i class="fa fa-spinner fa-spin"></i>
+                    </ng-container>
+                <ng-template #searchIco>
+                    <i class="fas fa-search"></i>
+                </ng-template>
+                    <!-- <span>{{('search.form.search' | translate) }}</span> -->
+            </button>
+
+
+            
+        </div>
+<!-- <div (mouseleave)="focuseoutinput()" 
+    [class]="showScopeSelector ? 'search-query-suggestion_searchpage' : 'search-query-suggestion'">
+    <ul id="search-results" class="list-group scroll-container " *ngIf="showsuggestion" style="cursor: pointer;">
+        <li>
+            <ul class="list-group">
+                <li *ngFor="let sugg of suggestionList.spellcheck" (click)=setQuery(sugg) class="suggestion">
+                    <p class="text-info m-3" *ngIf="sugg.length>0" [innerHTML]="sugg"></p>
+                </li>
+
+            </ul>
+        </li>
+    
+        <li *ngIf="collectionList.length > 0">
+            <ul class="list-group">
+                <li class="suggestion-header">{{'home.search.collection' | translate}}</li>
+                <li *ngFor="let itm of collectionList" class="suggestion">
+                    <a [routerLink]="['/collections/' + itm.indexableObject.id]">
+                        <p class="text-info m-3" [innerHTML]="getCleanedString(itm)"></p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+    </ul>
+</div> -->
+       
+    </div>
+</form>
