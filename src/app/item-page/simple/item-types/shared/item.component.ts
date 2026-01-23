@@ -695,4 +695,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustResourceUrl(extractedLink);
   }
 
+  escapeHtml(text: string): string {
+    return text
+      ?.replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
 }
