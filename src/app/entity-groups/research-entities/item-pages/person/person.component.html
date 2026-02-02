@@ -68,10 +68,10 @@
             <span *ngIf="!last">, </span></a>
         </ng-container>
       </div>
-      <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('person.research.interest')">
+      <!-- <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('person.research.interest')">
         <span class="text-secondary h6">Research Intrest: </span>
         <span> {{object.firstMetadataValue('person.research.interest')}}</span>
-      </div>
+      </div> -->
       <div class="col-lg-12 mb-2 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('person.research.project')">
         <span class="text-secondary h6">{{'untypeitem.metadata.research_project' | translate}}: </span>
         <span class="slash text-black">{{object.firstMetadataValue('person.research.project')}}</span>
