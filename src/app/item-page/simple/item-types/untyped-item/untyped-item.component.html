@@ -18,25 +18,25 @@
     </div>
     <div class="col-xs-12 col-md-10 py-3">
       <div class="w-100" >
-        <p class="h6 badge badge-success mb-2" *ngIf="object.firstMetadataValue('dc.type')">{{ object.firstMetadataValue('dc.type') | translate }}
+        <p class="h6 badge badge-success mb-3" *ngIf="object.firstMetadataValue('dc.type')">{{ object.firstMetadataValue('dc.type') | translate }}
           <!-- <span class="h5 ml-3 text-primary" *ngIf="accessStatus !=''">
             <i *ngIf="accessStatus==='open.access'" class="fa fa-lgfa-unlock fa-lg"></i>
             <i class="fa fa-lgfa-unlock fa-lg" *ngIf="accessStatus==='restricted.access'"></i>
           </span> -->
         </p>
       </div>
-      <div class="d-flex flex-row mb-2 text-secondary ">
+      <div class="d-flex flex-row mb-3 text-secondary ">
         <ds-themed-item-page-title-field [item]="object" class=""></ds-themed-item-page-title-field>
         <ds-dso-edit-menu></ds-dso-edit-menu>
       </div>
-      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.title.alternative')">
+      <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.title.alternative')">
         <span class="text-secondary  h6">{{'untypeitem.metadata.othertitles' | translate}}: </span>
         <ng-container *ngFor="let titles of object.allMetadataValues('dc.title.alternative'); let last = last;">
-          <span class="text-black">{{titles}}</span>
+          <span class="text-secondary  h6">{{titles}}</span>
           <span *ngIf="!last"> | </span>
         </ng-container>
       </div>
-      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.contributor.author')">
+      <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.contributor.author')">
         <span class="text-secondary  h6">{{'untypeitem.metadata.authors' | translate}}: </span>
         <ng-container *ngFor="let author of object.allMetadataValues('dc.contributor.author'); let last = last;">
           <a [routerLink]="['/search']" [queryParams]="{'f.author':author+',equals'}">{{author}}</a>
@@ -46,22 +46,22 @@
       <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.contributor.editor')">
         <span class="text-secondary  h6">{{'untypeitem.metadata.editors' | translate}}: </span>
         <ng-container *ngFor="let language of object.allMetadataValues('dc.contributor.editor'); let last = last;">
-          <span class="text-black">{{language}}</span>
+          <span class="text-secondary  h6">{{language}}</span>
           <span *ngIf="!last"> | </span>
         </ng-container>
       </div>
       <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.contributor.corpauthor')">
         <span class="text-secondary  h6">{{'untypeitem.metadata.corporateauthor' | translate}}: </span>
         <ng-container *ngFor="let language of object.allMetadataValues('dc.contributor.corpauthor'); let last = last;">
-          <span class="text-black">{{language}}</span>
+          <span class="text-secondary  h6">{{language}}</span>
           <span *ngIf="!last"> | </span>
         </ng-container>
       </div>
       <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.date.issued')">
         <span class="text-secondary  h6">{{'untypeitem.metadata.yearofpublication' | translate}}: </span>
-        <span class="text-black">{{object.firstMetadataValue('dc.date.issued')}}</span>
+        <span class="text-secondary  h6">{{object.firstMetadataValue('dc.date.issued')}}</span>
       </div>
-      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.language.iso')">
+      <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.language.iso')">
         <span class="text-secondary  h6">{{'untypeitem.metadata.language' | translate}}: </span>
        
         <ng-container *ngFor="let subject of object.allMetadataValues('dc.language.iso'); let last = last;">
@@ -70,7 +70,7 @@
           <span *ngIf="!last"> | </span>
         </ng-container>
       </div>
-      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.subject')">
+      <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.subject')">
         <span class="text-secondary  h6">{{'untypeitem.metadata.keywords' | translate}}: </span>
         <ng-container *ngFor="let subject of object.allMetadataValues('dc.subject'); let last = last;">
           <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.subject':subject+',equals'}"><span
@@ -78,7 +78,7 @@
           <span *ngIf="!last"> | </span>
         </ng-container>
       </div>
-      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.department')">
+      <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.department')">
         <span class="text-secondary  h6">{{'untypeitem.metadata.department' | translate}}: </span>
         <ng-container *ngFor="let subject of object.allMetadataValues('dc.department'); let last = last;">
           <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.department':subject+',equals'}"><span
@@ -86,7 +86,7 @@
           <span *ngIf="!last"> | </span>
         </ng-container>
       </div>
-      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.location')">
+      <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.location')">
         <span class="text-secondary  h6">{{'untypeitem.metadata.location' | translate}}: </span>
         <ng-container *ngFor="let subject of object.allMetadataValues('dc.location'); let last = last;">
           <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.location':subject+',equals'}"><span
@@ -95,7 +95,7 @@
         </ng-container>
       </div>
      
-      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.location.library')">
+      <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.location.library')">
         <span class="text-secondary  h6">{{'untypeitem.metadata.librarylocation' | translate}}: </span>
         <ng-container *ngFor="let subject of object.allMetadataValues('dc.location.library'); let last = last;">
           <a class="h6" [routerLink]="['/search']" [queryParams]="{'f.loclib':subject+',equals'}"><span
@@ -103,8 +103,8 @@
           <span *ngIf="!last"> | </span>
         </ng-container>
       </div>
-      <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.faculty')">
-        <span class="text-black">{{'untypeitem.metadata.faculty' | translate}}: </span>
+      <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.faculty')">
+        <span class="text-secondary  h6">{{'untypeitem.metadata.faculty' | translate}}: </span>
         <ng-container *ngFor="let faculty of object.allMetadataValues('dc.faculty'); let last = last;">
           <a [routerLink]="['/search']" [queryParams]="{'f.faculty':faculty+',equals'}">{{faculty}}</a>
           <span *ngIf="!last"> | </span>
@@ -347,9 +347,9 @@
     <div class="col-12 col-md-4 mb-md-0 mb-3 pr-md-1 p-0 attachments">
       
       <div class="bg-white h-100 p-3 w-100">
-        <!-- <div class="col-lg-12 pb-2  mb-2 p-0 bg-white" style="    border-bottom: 3px solid #dee2e6;" *ngIf="object.firstMetadataValue('dc.bitstream.file')">
+        <!-- <div class="col-lg-12 pb-2  mb-3 p-0 bg-white" style="    border-bottom: 3px solid #dee2e6;" *ngIf="object.firstMetadataValue('dc.bitstream.file')">
         
-          <h4 class="mb-2 ml-3 text-secondary "><i class="fa fa-paperclip"> </i> External File(s)</h4>
+          <h4 class="mb-3 ml-3 text-secondary "><i class="fa fa-paperclip"> </i> External File(s)</h4>
           <ng-container *ngFor="let author of object.allMetadataValues('dc.bitstream.file'); let last = last;">
             <div class="col-lg-12 p-2 border-bottom">
               <a href="{{author}}" class="text-break" target="_blank"><span class="text-secondary  ">{{author}}</span></a>
@@ -362,10 +362,7 @@
     </div>
     <div class="col-12 col-md-8 pl-md-1 p-0 moredetails bg-white">
       <div class="bg-white h-100 p-3 w-100">
-        <h4 class="mb-2 text-secondary ">{{'untypeitem.metadata.moredetail' | translate}}</h4>
-       
-        
-        
+        <h4 class="mb-3 text-secondary ">{{'untypeitem.metadata.moredetail' | translate}}</h4>
         <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.organization')">
           <span class="text-secondary  h6">{{'untypeitem.metadata.organization' | translate}}: </span>
           <ng-container *ngFor="let subject of object.allMetadataValues('dc.organization'); let last = last;">
@@ -387,16 +384,26 @@
             <span class="slash text-black" [innerHTML]="object.firstMetadataValue('html.description.abstract')"></span>
            
           </div> -->
-          <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="object.allMetadataValues('dc.description.abstract')">
+          <!-- <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="object.allMetadataValues('dc.description.abstract')">
             <ng-container *ngFor="let abstract of object.allMetadataValues('dc.description.abstract'); let last = last;">
             <span class="text-secondary  h6">{{'item.page.abstract' | translate}}: </span>
             <span class="slash text-black" [innerHTML]="abstract"></span>
           </ng-container>
+          </div> -->
+          <div class="col-lg-12 mb-3 p-0" *ngIf="object.firstMetadataValue('dc.description.abstract')">
+            <ds-truncatable [id]="2" *ngIf="object !== undefined && object !== null">
+              <ds-truncatable-part [id]="2" [minLines]="3">
+                <span class="text-secondary h6">{{'item.page.abstract' | translate}}: </span>
+                <span class="slash text-black"
+                  [innerHTML]="escapeHtml(object.firstMetadataValue('dc.description.abstract'))">
+                </span>
+              </ds-truncatable-part>
+            </ds-truncatable>
           </div>
           <div class="col-lg-12 mb-3 p-0 item-list-abstract" *ngIf="object.firstMetadataValue('dc.description')">
-            <span class="text-secondary  h6">{{'admin.registries.bitstream-formats.edit.description.label' | translate}}: </span>
-          <ds-truncatable [id]="1" *ngIf="object !== undefined && object !== null">
-            <ds-truncatable-part [id]="1" [minLines]="3">
+            <ds-truncatable [id]="1" *ngIf="object !== undefined && object !== null">
+              <ds-truncatable-part [id]="1" [minLines]="3">
+              <span class="text-secondary  h6">{{'admin.registries.bitstream-formats.edit.description.label' | translate}}: </span>
               <span class="slash text-black">{{object.firstMetadataValue('dc.description')}}</span>
             </ds-truncatable-part>
           </ds-truncatable>
@@ -756,7 +763,7 @@
           </a>
         </div>
           
-          <div class="col-lg-12 mb-2 p-0 item-list-abstract mt-4" *ngIf="object.firstMetadataValue('dc.rights.uri') && object.firstMetadataValue('dc.rights.uri') !== '-' && object.firstMetadataValue('dc.rights') !== 'No Creative Commons'">
+          <div class="col-lg-12 mb-3 p-0 item-list-abstract mt-4" *ngIf="object.firstMetadataValue('dc.rights.uri') && object.firstMetadataValue('dc.rights.uri') !== '-' && object.firstMetadataValue('dc.rights') !== 'No Creative Commons'">
             <h5>{{'untypeitem.metadata.title' | translate}}</h5>
             <p>{{'untypeitem.metadata.creative_commons' | translate}}</p>
             <div class="row">
@@ -807,7 +814,7 @@
   <div class="row bg-white mt-4 comments-actions">
     <div class="container-fluid bg-white pb-3">
       <form [formGroup]="CommentFormGroup">
-        <div class="row mb-2">
+        <div class="row mb-3">
           <div class="col-lg-12 p-3">
             <span class="text-primary h4 ">{{'untypeitem.metadata.commentstitle' | translate}} </span>
             <span class="text-primary">{{'untypeitem.metadata.subtitle' | translate}}</span>
@@ -854,7 +861,7 @@
     <div class="container-fluid bg-white pb-3">
       <div class="row align-items-center" style="margin-left: 0px!important;margin-right: 0px!important;">
         <div class="col-md-6 col-sm-12">
-          <div class="row mb-2">
+          <div class="row mb-3">
             <div class="col-lg-12 p-3">
               <span class="text-primary h4 ">{{'untypeitem.metadata.itemanalyticstitle' | translate}}</span>
             </div>
@@ -942,7 +949,7 @@
   <div class="row bg-white mt-4 d-none comments-actions">
     <div class="container-fluid bg-white pb-3">
       <form [formGroup]="CommentFormGroup">
-        <div class="row mb-2">
+        <div class="row mb-3">
           <div class="col-lg-12 p-3">
             <span class="text-secondary  h4 ">{{'untypeitem.metadata.commentstitle' | translate}} </span>
             <span class="text-secondary ">{{'untypeitem.metadata.subtitle' | translate}}</span>
