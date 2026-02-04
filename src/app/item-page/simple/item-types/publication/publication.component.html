@@ -470,10 +470,10 @@
           <p class="slash text-black">{{object.firstMetadataValue('dc.format')}}</p>
         </div> -->
         <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.description.abstract')">
-          <span class="text-secondary h6">{{'item.page.abstract' | translate}}:  </span>
           <!-- <span [innerHTML]="object.firstMetadataValue('dc.description.abstract')"></span> -->
           <ds-truncatable [id]="2" *ngIf="object !== undefined && object !== null">
             <ds-truncatable-part [id]="2" [minLines]="3">
+              <span class="text-secondary h6">{{'item.page.abstract' | translate}}:  </span>
               <span class="slash text-black"
                 [innerHTML]="escapeHtml(object.firstMetadataValue('dc.description.abstract'))">
               </span>
@@ -571,10 +571,10 @@
           <span>{{object.firstMetadataValue('dc.contributor.affiliation')}}</span>
         </div>
         <div class="col-lg-12 mb-2 p-0" *ngIf="object.firstMetadataValue('dc.description')">
-          <span class="text-secondary h6">{{'person.page.orcid.sync-queue.table.header.description' | translate}}: </span>
           <!-- <span class="slash text-black"> {{object.firstMetadataValue('dc.description')}}</span> -->
-           <ds-truncatable [id]="3" *ngIf="object !== undefined && object !== null">
+          <ds-truncatable [id]="3" *ngIf="object !== undefined && object !== null">
             <ds-truncatable-part [id]="3" [minLines]="3">
+              <span class="text-secondary h6">{{'person.page.orcid.sync-queue.table.header.description' | translate}}: </span>
               <span class="slash text-black" [innerHTML]="object.firstMetadataValue('dc.description')"></span>
             </ds-truncatable-part>
           </ds-truncatable>

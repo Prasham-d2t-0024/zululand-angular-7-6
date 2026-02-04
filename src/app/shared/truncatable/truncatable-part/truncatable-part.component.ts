@@ -103,9 +103,15 @@ export class TruncatablePartComponent implements AfterViewChecked, OnInit, OnDes
    * Expands the truncatable when it's collapsed, collapses it when it's expanded
    */
   public toggle() {
+    const wasExpanded = this.expand;
     this.service.toggle(this.id);
     // this.expandable = !this.expandable;
-    this.expand = !this.expand;    
+    this.expand = !this.expand;   
+
+    // If collapsing, bring content back into view
+    if (wasExpanded) {
+      this.scrollContentIntoView();
+    }
   }
 
   /**
@@ -155,4 +161,14 @@ export class TruncatablePartComponent implements AfterViewChecked, OnInit, OnDes
       this.sub.unsubscribe();
     }
   }
+
+  scrollContentIntoView() {
+    setTimeout(() => {
+      this.content.nativeElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 0);
+  }
+
 }
