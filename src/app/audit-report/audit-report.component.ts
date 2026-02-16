@@ -35,6 +35,7 @@ import { EPerson } from '../core/eperson/models/eperson.model';
 import { DmsEvent } from '../core/shared/dmsevent.model';
 import { SupersetService } from '../core/data/SupersetService-data.service';
 import { isPlatformBrowser } from '@angular/common';
+import _ from 'lodash';
 @Injectable()
 export class CustomDateParserFormatter extends NgbDateParserFormatter {
 
@@ -297,6 +298,31 @@ export class AuditReportComponent implements  AfterViewInit{
     }
   }
 
+  getDisplayTitle(item: any): string {
+    // let entityType = item.firstMetadataValue('dspace.entity.type');
+    let entityType = _.get(item,['metadata','dspace.entity.type',0,'value'],'');
+    if (entityType === 'Publication') {
+      return _.get(item,['metadata','dc.title',0,'value'],'');
+    } else if (entityType === 'OrgUnit') {
+      return _.get(item,['metadata','organization.legalName',0,'value'],'');
+    } else {
+      const title1 = _.get(item,['metadata','person.prefix',0,'value'],'');
+      const title2 = _.get(item,['metadata','person.familyName',0,'value'],'');
+      const title3 = _.get(item,['metadata','person.givenName',0,'value'],'');
+
+      if (title1 && title2 && title3) {
+        return `${title1} ${title2}, ${title3}`;
+      } else if (title1 && title2) {
+        return `${title1} ${title2}`;
+      } else if (title1) {
+        return title1;
+      } else if (title2 && title3) {
+        return `${title2}, ${title3}`;
+      } else {
+        return title2 || title3 || '';
+      }
+    }
+  }
   ngOnDestroy(): void {
     if (hasValue(this.currentPageSubscription)) this.currentPageSubscription.unsubscribe();
   }

@@ -74,8 +74,8 @@
                 placeholder="">
                 <option value="">Select Action type</option>
                 <option value="0">Login</option>
-                <option value="1"> View</option>
-                <option value="2"> Search</option>
+                <option value="1">View</option>
+                <option value="2">Search</option>
                 <option value="3">Download</option>
                 <option value="4">Create</option>
                 <option value="5">Edit</option>
@@ -112,8 +112,12 @@
                                 {{(pageInfoState$ | async)?.elementsPerPage * ((pageInfoState$ |
                                 async)?.currentPage-1)+i+1}}
                             </td>
-                            <td>{{item1.title}}</td>
-                            <td>{{item1.dspaceObject}}</td>
+                            <td>
+                                <span>
+                                    {{ getDisplayTitle(item1?.item) }}
+                                </span>
+                            </td>
+                            <td>{{item1?.dspaceObject}}<br>({{item1?.item?.entityType}})</td>
                             <td><span *ngIf="!item1.ePersonRest">Anonymous</span><span
                                     *ngIf="item1.ePersonRest">{{item1.ePersonRest.name}}</span> </td>
                             <td>{{item1.action}}</td>
