@@ -77,9 +77,9 @@ export class CustomDateParserFormatter extends NgbDateParserFormatter {
     { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter }
   ]
 })
-export class AuditReportComponent implements  AfterViewInit{
+export class AuditReportComponent implements AfterViewInit {
   @ViewChild("dashboard") private dashboardElement: ElementRef;
-  
+
   hoveredDate: NgbDate | null = null;
   items$: BehaviorSubject<PaginatedList<DmsEvent>> = new BehaviorSubject(buildPaginatedList<DmsEvent>(new PageInfo(), []));
   pageInfoState$: BehaviorSubject<PageInfo> = new BehaviorSubject<PageInfo>(undefined);
@@ -94,7 +94,7 @@ export class AuditReportComponent implements  AfterViewInit{
    * The pagination id
    */
   items: any = [];
-  finduser: string="";
+  finduser: string = "";
   pageId = 'tl';
 
   currentPageSubscription: Subscription;
@@ -124,7 +124,7 @@ export class AuditReportComponent implements  AfterViewInit{
     private formBuilder: FormBuilder,
     private elementRef: ElementRef,
     private cdRef: ChangeDetectorRef,
-     @Inject(PLATFORM_ID) private platformId: any,
+    @Inject(PLATFORM_ID) private platformId: any,
     private embedService: SupersetService) {
     this.currentSearchQuery = 'demo';
     this.currentSearchScope = 'metadata';
@@ -135,7 +135,7 @@ export class AuditReportComponent implements  AfterViewInit{
     this.config.currentPage = 1;
     this.sortConfig = new SortOptions('dc.title', SortDirection.ASC);
     this.fromDate = calendar.getPrev(calendar.getToday(), 'd', 30);
-    this.toDate = calendar.getToday();  
+    this.toDate = calendar.getToday();
     this.maxDate = this.toDate;
   }
   embedSupersetDashboard(): void {
@@ -153,7 +153,7 @@ export class AuditReportComponent implements  AfterViewInit{
             iframe.style.height = '600px';
             iframe.classList.add = 'iframe-container';// Set the height as needed
 
-          } 
+          }
           this.cdRef.detectChanges();
         },
         (error) => {
@@ -221,7 +221,7 @@ export class AuditReportComponent implements  AfterViewInit{
     const parsed = this.formatter.parse(input);
     return parsed && this.calendar.isValid(NgbDate.from(parsed)) ? NgbDate.from(parsed) : currentValue;
   }
- 
+
   getresult(): void {
     let userid = "";
     if (this.finduser != undefined || this.finduser != "") {
@@ -248,7 +248,7 @@ export class AuditReportComponent implements  AfterViewInit{
           currentPage: currentPagination.currentPage,
           elementsPerPage: currentPagination.pageSize,
         });
-      }), 
+      }),
       getAllSucceededRemoteData(),
     ).subscribe((results) => {
       this.loder = false;
@@ -256,26 +256,26 @@ export class AuditReportComponent implements  AfterViewInit{
       this.pageInfoState$.next(results.payload.pageInfo);
     });
   }
-  getepople() {   
-      this.states = [];
-      this.loderepople = true;
-      this.showdocument = true;
-      let query: string = "";
-      this.epersonService.searchByScope(this.currentSearchScope, query, {
-        currentPage: 1,
-        elementsPerPage: 9999
-      }).pipe(getFirstSucceededRemoteData(), getRemoteDataPayload())
-        .subscribe((list: PaginatedList<EPerson>) => {
-          this.states = [];
-          list.page.map((documentypetree: EPerson) => {
-            //  documentypetree.templetName=this.highlight(typedoc,documentypetree.templetName);
+  getepople() {
+    this.states = [];
+    this.loderepople = true;
+    this.showdocument = true;
+    let query: string = "";
+    this.epersonService.searchByScope(this.currentSearchScope, query, {
+      currentPage: 1,
+      elementsPerPage: 9999
+    }).pipe(getFirstSucceededRemoteData(), getRemoteDataPayload())
+      .subscribe((list: PaginatedList<EPerson>) => {
+        this.states = [];
+        list.page.map((documentypetree: EPerson) => {
+          //  documentypetree.templetName=this.highlight(typedoc,documentypetree.templetName);
 
-            this.states.push(documentypetree);
-          })
-          this.loderepople = false;
-          this.cdRef.detectChanges();
+          this.states.push(documentypetree);
         })
-   
+        this.loderepople = false;
+        this.cdRef.detectChanges();
+      })
+
 
   }
   onPageChange(event) {
@@ -294,21 +294,21 @@ export class AuditReportComponent implements  AfterViewInit{
   ngAfterViewInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.getepople();
-    //  this.embedSupersetDashboard();
+      //  this.embedSupersetDashboard();
     }
   }
 
   getDisplayTitle(item: any): string {
     // let entityType = item.firstMetadataValue('dspace.entity.type');
-    let entityType = _.get(item,['metadata','dspace.entity.type',0,'value'],'');
+    let entityType = _.get(item, ['metadata', 'dspace.entity.type', 0, 'value'], '');
     if (entityType === 'Publication') {
-      return _.get(item,['metadata','dc.title',0,'value'],'');
+      return _.get(item, ['metadata', 'dc.title', 0, 'value'], '');
     } else if (entityType === 'OrgUnit') {
-      return _.get(item,['metadata','organization.legalName',0,'value'],'');
-    } else {
-      const title1 = _.get(item,['metadata','person.prefix',0,'value'],'');
-      const title2 = _.get(item,['metadata','person.familyName',0,'value'],'');
-      const title3 = _.get(item,['metadata','person.givenName',0,'value'],'');
+      return _.get(item, ['metadata', 'organization.legalName', 0, 'value'], '');
+    } else if ((entityType === 'Person')) {
+      const title1 = _.get(item, ['metadata', 'person.prefix', 0, 'value'], '');
+      const title2 = _.get(item, ['metadata', 'person.familyName', 0, 'value'], '');
+      const title3 = _.get(item, ['metadata', 'person.givenName', 0, 'value'], '');
 
       if (title1 && title2 && title3) {
         return `${title1} ${title2}, ${title3}`;
@@ -321,6 +321,8 @@ export class AuditReportComponent implements  AfterViewInit{
       } else {
         return title2 || title3 || '';
       }
+    } else {
+      return _.get(item, ['metadata', 'dc.title', 0, 'value'], '');
     }
   }
   ngOnDestroy(): void {
